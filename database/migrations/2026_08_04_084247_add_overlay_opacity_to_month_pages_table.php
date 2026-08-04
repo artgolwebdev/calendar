@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('month_pages', function (Blueprint $table) {
-            $table->integer('overlay_opacity')->default(30)->after('custom_image_path');
+           // $table->integer('overlay_opacity')->default(30)->after('custom_image_path');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('month_pages', function (Blueprint $table) {
-            $table->dropColumn('overlay_opacity');
+           // $table->dropColumn('overlay_opacity');
         });
     }
 };
