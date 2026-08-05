@@ -1,13 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-semibold text-[#1A1A1E]">לוח השנה שלי</h1>
                 <p class="text-xs text-[#6B6B75] mt-1">נהל וצפה בלוחות השנה המשפחתיים שלך</p>
             </div>
-            <a href="{{ route('calendars.create') }}" class="btn btn-primary">
-                + צור לוח שנה חדש
-            </a>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <a href="{{ route('family-members.index') }}"
+                    class="btn btn-secondary btn-sm flex-1 sm:flex-none justify-center">
+                    חברי משפחה
+                </a>
+                <a href="{{ route('calendars.create') }}"
+                    class="btn btn-primary btn-sm flex-1 sm:flex-none justify-center">
+                    + צור לוח שנה חדש
+                </a>
+            </div>
         </div>
     </x-slot>
 

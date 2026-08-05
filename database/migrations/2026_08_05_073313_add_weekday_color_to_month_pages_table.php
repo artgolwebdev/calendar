@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('month_pages', function (Blueprint $table) {
-           // $table->integer('overlay_opacity')->default(30)->after('custom_image_path');
+            $table->string('weekday_color')->nullable()->after('day_box_font_color');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('month_pages', function (Blueprint $table) {
-           // $table->dropColumn('overlay_opacity');
+            $table->dropColumn('weekday_color');
         });
     }
 };

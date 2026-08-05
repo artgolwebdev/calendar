@@ -13,6 +13,7 @@ class CalendarEvent extends Model
         'title',
         'event_date',
         'event_type',
+        'is_auto_generated',
     ];
 
     protected $casts = [

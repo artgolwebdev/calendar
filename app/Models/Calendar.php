@@ -38,9 +38,6 @@ class Calendar extends Model
             if ($calendar->cover_image_path) {
                 \Storage::disk('public')->delete($calendar->cover_image_path);
             }
-            
-            $calendar->calendarEvents()->delete();
-            $calendar->monthPages()->delete();
         });
     }
 }

@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+    <span style="font-size: 2.5rem; font-weight: 700; color: #4F46E5;">לוח שנה משפחתי</span>
 </p>
 
-## About Laravel
+<p align="center"><strong>Family Calendar</strong> — a Hebrew RTL web application for building and customizing family calendars.</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## About
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+לוח שנה משפחתי lets you create multiple calendars, style each month individually, track family birthdays and marriage anniversaries, and see Jewish holidays — all in one place.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+- **Multiple calendars** per user, each with its own cover image
+- **Yearly overview** — month tiles with background images and chips for events and Jewish holidays
+- **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation
+- **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
+- **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars, labeled with the member’s age or years married
+- **Calendar events** — birthdays, anniversaries, and custom events
+- **Jewish holidays** — fetched from the Hebcal API and grouped per month
+- **Hebrew date conversion** — built-in service with leap-year support (אדר א׳ / אדר ב׳)
+- Fully **RTL** Hebrew UI, responsive down to mobile
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech Stack
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3+
+- Laravel 13
+- Blade + Tailwind CSS (RTL) + Alpine.js
+- Vite
+- SQLite (default)
+- PHPUnit
+- [Hebcal API](https://www.hebcal.com/home/developer-apis) for Jewish holidays
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Requirements
 
-## Agentic Development
+- PHP 8.3+
+- Composer
+- Node.js + npm
+- SQLite (or a database of your choice)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
+# 1. Install PHP dependencies
+composer install
 
-php artisan boost:install
+# 2. Create the environment file and generate an application key
+cp .env.example .env
+php artisan key:generate
+
+# 3. Configure .env (database connection, etc.), then run migrations
+php artisan migrate
+
+# 4. (Optional) Seed demo data
+php artisan db:seed
+#   Login: demo@example.com / password
+
+# 5. Install and build frontend assets
+npm install
+npm run build
+#   or, during development: npm run dev
+
+# 6. Serve the application
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Running Tests
 
-## Contributing
+```bash
+php artisan test --compact
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Code style is enforced with Laravel Pint:
 
-## Code of Conduct
+```bash
+vendor/bin/pint --dirty
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## How It Works
 
-## Security Vulnerabilities
+- **Auto-generated family events** — creating or updating a `FamilyMember` fires `FamilyMemberObserver`, which uses `FamilyEventGeneratorService` to upsert one canonical birthday/anniversary event per date-type on every calendar owned by the user. Deleting a member removes their auto events. Events are stored with their original date, and the month/year views resolve them against the displayed year (Gregorian recurrence), handling February 29 gracefully and showing the member’s age or years married.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Jewish holidays** — `IsraeliHolidaysService` queries the Hebcal API per year (cached) and the calendar views filter for major holidays.
+
+- **Design settings** — each of a calendar’s 12 month pages stores its own style; `MonthPageStyleService` resolves defaults and per-page overrides.
+
+## Project Structure
+
+```
+app/
+├── Http/Controllers/       Calendar, MonthPage, CalendarEvent, FamilyMember
+├── Models/                 Calendar, CalendarEvent, FamilyMember, MonthPage, User
+├── Observers/              FamilyMemberObserver
+├── Requests/               Form requests with validation
+├── Policies/               FamilyMember, Calendar
+└── Services/
+    ├── FamilyEventGeneratorService
+    ├── HebrewDateService
+    ├── IsraeliHolidaysService
+    └── MonthPageStyleService
+resources/views/
+├── calendars/              Yearly + monthly views, design settings partial
+├── calendar-events/        Event create/edit
+├── family-members/         Member CRUD
+└── dashboard.blade.php     Dashboard
+tests/
+├── Feature/                Calendar, MonthPageSettings, FamilyEventGeneration, Dashboard
+└── Unit/                   HebrewDateService
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

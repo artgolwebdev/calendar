@@ -17,6 +17,7 @@ class MonthPage extends Model
         'day_box_bg_color',
         'day_box_font_color',
         'day_box_bg_opacity',
+        'weekday_color',
         'show_adjacent_month_days',
     ];
 

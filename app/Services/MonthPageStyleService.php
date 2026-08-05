@@ -6,94 +6,117 @@ use App\Models\MonthPage;
 
 class MonthPageStyleService
 {
+    public const DEFAULT_FONT = 'default';
+
+    public const DEFAULT_OVERLAY_OPACITY = 30;
+
+    public const DEFAULT_DAY_BOX_BG_COLOR = '#FFFFFF';
+
+    public const DEFAULT_DAY_BOX_FONT_COLOR = '#2B2E3A';
+
+    public const DEFAULT_DAY_BOX_BG_OPACITY = 100;
+
+    public const DEFAULT_WEEKDAY_COLOR = '#6B6B75';
+
+    public const DEFAULT_SHOW_ADJACENT_MONTH_DAYS = true;
+
+    private const FONTS = [
+        'default' => "'Heebo', sans-serif",
+        'modern' => "'Assistant', sans-serif",
+        'traditional' => "'Frank Ruhl Libre', serif",
+        'elegant' => "'Rubik', sans-serif",
+    ];
+
     /**
-     * Resolve all styles for a month page
+     * Get the default design settings used when creating a month page.
+     *
+     * @return array<string, mixed>
+     */
+    public function defaults(): array
+    {
+        return [
+            'font_choice' => self::DEFAULT_FONT,
+            'overlay_opacity' => self::DEFAULT_OVERLAY_OPACITY,
+            'day_box_bg_color' => self::DEFAULT_DAY_BOX_BG_COLOR,
+            'day_box_font_color' => self::DEFAULT_DAY_BOX_FONT_COLOR,
+            'day_box_bg_opacity' => self::DEFAULT_DAY_BOX_BG_OPACITY,
+            'weekday_color' => self::DEFAULT_WEEKDAY_COLOR,
+            'show_adjacent_month_days' => self::DEFAULT_SHOW_ADJACENT_MONTH_DAYS,
+        ];
+    }
+
+    /**
+     * Resolve all resolved styles for a month page.
+     *
+     * @return array{fontFamily: string, gridBackground: string, overlay: string, weekdayColor: string, dayBox: array{backgroundColor: string, fontColor: string}}
      */
     public function resolve(MonthPage $monthPage): array
     {
         return [
-            'fontFamily' => $this->getFontFamily($monthPage),
-            'gridBackgroundStyle' => $this->getGridBackgroundStyle($monthPage),
-            'overlayStyle' => $this->getOverlayStyle($monthPage),
-            'dayBoxStyle' => $this->getDayBoxStyle($monthPage),
+            'fontFamily' => $this->fontFamily($monthPage),
+            'gridBackground' => $this->gridBackground($monthPage),
+            'overlay' => $this->overlay($monthPage),
+            'weekdayColor' => $this->weekdayColor($monthPage),
+            'dayBox' => $this->dayBox($monthPage),
         ];
     }
 
-    /**
-     * Get font family based on font choice
-     */
-    private function getFontFamily(MonthPage $monthPage): string
+    public function fontFamily(MonthPage $monthPage): string
     {
-        $fontMap = [
-            'default' => "'Heebo', sans-serif",
-            'modern' => "'Assistant', sans-serif",
-            'traditional' => "'Frank Ruhl Libre', serif",
-            'elegant' => "'Rubik', sans-serif",
-        ];
-
-        return $fontMap[$monthPage->font_choice] ?? $fontMap['default'];
+        return self::FONTS[$monthPage->font_choice] ?? self::FONTS[self::DEFAULT_FONT];
     }
 
-    /**
-     * Get grid background style
-     */
-    private function getGridBackgroundStyle(MonthPage $monthPage): string
+    public function gridBackground(MonthPage $monthPage): string
     {
-        $backgroundImage = '';
-        
-        if ($monthPage->custom_image_path) {
-            $backgroundImage = asset('storage/' . $monthPage->custom_image_path);
-        } elseif ($monthPage->background_image_path) {
-            $backgroundImage = asset('storage/' . $monthPage->background_image_path);
+        $path = $monthPage->custom_image_path ?? $monthPage->background_image_path;
+
+        if (! $path) {
+            return '';
         }
 
-        if ($backgroundImage) {
-            return "background-image: url('$backgroundImage'); background-size: cover; background-position: center; background-repeat: no-repeat;";
-        }
+        $url = asset('storage/'.$path);
 
-        return '';
+        return "background-image: url('{$url}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
+    }
+
+    public function overlay(MonthPage $monthPage): string
+    {
+        $opacity = $monthPage->overlay_opacity ?? self::DEFAULT_OVERLAY_OPACITY;
+
+        return 'background-color: rgba(0, 0, 0, '.($opacity / 100).');';
+    }
+
+    public function weekdayColor(MonthPage $monthPage): string
+    {
+        return $monthPage->weekday_color ?? self::DEFAULT_WEEKDAY_COLOR;
     }
 
     /**
-     * Get overlay style
+     * @return array{backgroundColor: string, fontColor: string}
      */
-    private function getOverlayStyle(MonthPage $monthPage): string
+    public function dayBox(MonthPage $monthPage): array
     {
-        $opacity = $monthPage->overlay_opacity ?? 30;
-        return "background-color: rgba(0, 0, 0, " . ($opacity / 100) . ");";
-    }
-
-    /**
-     * Get day box style
-     */
-    private function getDayBoxStyle(MonthPage $monthPage): array
-    {
-        $bgColor = $monthPage->day_box_bg_color ?? '#FFFFFF';
-        $fontColor = $monthPage->day_box_font_color ?? '#2B2E3A';
-        $bgOpacity = $monthPage->day_box_bg_opacity ?? 100;
-
-        // Convert hex to rgba for background color with opacity
-        $bgRgba = $this->hexToRgba($bgColor, $bgOpacity / 100);
+        $bgColor = $monthPage->day_box_bg_color ?? self::DEFAULT_DAY_BOX_BG_COLOR;
+        $fontColor = $monthPage->day_box_font_color ?? self::DEFAULT_DAY_BOX_FONT_COLOR;
+        $bgOpacity = $monthPage->day_box_bg_opacity ?? self::DEFAULT_DAY_BOX_BG_OPACITY;
 
         return [
-            'backgroundColor' => $bgRgba,
+            'backgroundColor' => $this->hexToRgba($bgColor, $bgOpacity / 100),
             'fontColor' => $fontColor,
         ];
     }
 
     /**
-     * Convert hex color to rgba
+     * Convert a hex color to an rgba string.
      */
     private function hexToRgba(string $hex, float $alpha): string
     {
-        // Remove hash if present
         $hex = ltrim($hex, '#');
-        
-        // Parse hex
+
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));
         $b = hexdec(substr($hex, 4, 2));
-        
-        return "rgba($r, $g, $b, $alpha)";
+
+        return "rgba({$r}, {$g}, {$b}, {$alpha})";
     }
 }

@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold text-[#1A1A1E]">צור לוח שנה חדש</h1>
             <a href="{{ route('dashboard') }}" class="text-sm font-medium text-[#6B6B75] hover:text-[#1A1A1E] transition-colors">
-                ← חזור ללוח הבקרה
+                → חזור ללוח הבקרה
             </a>
         </div>
     </x-slot>

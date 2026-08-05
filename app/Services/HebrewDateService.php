@@ -11,11 +11,13 @@ class HebrewDateService
 
     public function __construct()
     {
-        $this->converter = new HebrewConverter();
+        $this->converter = new HebrewConverter;
     }
 
     /**
-     * Convert a Carbon date to Hebrew year/month/day array
+     * Convert a Carbon date to an associative Hebrew year/month/day array
+     *
+     * @return array{year: int, month: int, day: int}
      */
     public function toHebrewArray(Carbon $date): array
     {
@@ -26,11 +28,14 @@ class HebrewDateService
         );
 
         if (is_string($result)) {
-            // Parse the string result if needed
             return $this->parseHebrewString($result);
         }
 
-        return $result;
+        return [
+            'year' => $result[0],
+            'month' => $result[1],
+            'day' => $result[2],
+        ];
     }
 
     /**
@@ -39,41 +44,63 @@ class HebrewDateService
     public function toHebrewString(Carbon $date): string
     {
         $hebrew = $this->toHebrewArray($date);
-        
-        $year = $hebrew['year'] ?? $hebrew['y'] ?? '';
-        $month = $hebrew['month'] ?? $hebrew['m'] ?? 1;
-        $day = $hebrew['day'] ?? $hebrew['d'] ?? 1;
 
-        $hebrewMonthName = $this->getHebrewMonthName($month);
-        
-        return "{$day} {$hebrewMonthName} {$year}";
+        $isLeap = $this->isLeapYear($hebrew['year']);
+
+        return "{$hebrew['day']} {$this->getHebrewMonthName($hebrew['month'], $isLeap)} {$hebrew['year']}";
     }
 
     /**
-     * Get Hebrew month name by number
-     * Handles leap year with Adar I / Adar II
+     * Convert a Carbon date to Hebrew day + month without the year
      */
-    protected function getHebrewMonthName(int $month): string
+    public function toHebrewDayMonthString(Carbon $date): string
+    {
+        $hebrew = $this->toHebrewArray($date);
+
+        $isLeap = $this->isLeapYear($hebrew['year']);
+
+        return "{$hebrew['day']} {$this->getHebrewMonthName($hebrew['month'], $isLeap)}";
+    }
+
+    /**
+     * Get the Hebrew month name (without a year) for a Carbon date
+     */
+    public function hebrewMonthName(Carbon $date): string
+    {
+        $hebrew = $this->toHebrewArray($date);
+
+        $isLeap = $this->isLeapYear($hebrew['year']);
+
+        return $this->getHebrewMonthName($hebrew['month'], $isLeap);
+    }
+
+    /**
+     * Get Hebrew month name by number.
+     *
+     * ICU (the underlying converter) numbers Hebrew months on a fixed 1-13
+     * slot scheme where 1 = Tishrei and 8 = Nisan. In a non-leap year month 6
+     * (Adar I) is simply skipped and plain Adar occupies slot 7; in a leap
+     * year slot 6 is Adar I and slot 7 is Adar II.
+     */
+    protected function getHebrewMonthName(int $month, bool $isLeap): string
     {
         $months = [
-            1 => 'ניסן',
-            2 => 'אייר',
-            3 => 'סיוון',
-            4 => 'תמוז',
-            5 => 'אב',
-            6 => 'אלול',
-            7 => 'תשרי',
-            8 => 'חשוון',
-            9 => 'כסלו',
-            10 => 'טבת',
-            11 => 'שבט',
-            12 => 'אדר',
-            13 => 'אדר א׳', // Adar I (leap year)
+            1 => 'תשרי',
+            2 => 'חשוון',
+            3 => 'כסלו',
+            4 => 'טבת',
+            5 => 'שבט',
+            6 => 'אדר א׳', // Adar I, leap years only
+            8 => 'ניסן',
+            9 => 'אייר',
+            10 => 'סיוון',
+            11 => 'תמוז',
+            12 => 'אב',
+            13 => 'אלול',
         ];
 
-        // For leap years, month 14 would be Adar II
-        if ($month === 14) {
-            return 'אדר ב׳'; // Adar II
+        if ($month === 7) {
+            return $isLeap ? 'אדר ב׳' : 'אדר';
         }
 
         return $months[$month] ?? 'חודש לא ידוע';
@@ -81,17 +108,21 @@ class HebrewDateService
 
     /**
      * Parse Hebrew date string if converter returns string
+     *
+     * @return array{year: int, month: int, day: int}
      */
     protected function parseHebrewString(string $date): array
     {
-        // This is a fallback - the converter should return an array
-        // but we handle strings just in case
-        $parts = explode(' ', $date);
-        
+        $parts = preg_split('/[\s\-:]/', trim($date)) ?: [];
+
+        $year = (int) ($parts[0] ?? 0);
+        $month = (int) ($parts[1] ?? 1);
+        $day = (int) ($parts[2] ?? 1);
+
         return [
-            'year' => $parts[0] ?? '',
-            'month' => $parts[1] ?? 1,
-            'day' => $parts[2] ?? 1,
+            'year' => $year,
+            'month' => $month,
+            'day' => $day,
         ];
     }
 
@@ -102,6 +133,7 @@ class HebrewDateService
     {
         // Hebrew leap years occur in years 3, 6, 8, 11, 14, 17, 19 of the 19-year cycle
         $yearInCycle = $hebrewYear % 19;
+
         return in_array($yearInCycle, [0, 3, 6, 8, 11, 14, 17]);
     }
 }
