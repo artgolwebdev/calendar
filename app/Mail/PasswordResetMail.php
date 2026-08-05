@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailables\Envelope;
 
 class PasswordResetMail extends Mailable
 {
-    public function __construct(public string $token, public string $email) {}
+    public function __construct(public string $token, public string $email, public string $userName) {}
 
     public function envelope(): Envelope
     {
@@ -24,6 +24,8 @@ class PasswordResetMail extends Mailable
             with: [
                 'resetUrl' => $this->resetUrl(),
                 'appName' => config('app.name'),
+                'userName' => $this->userName,
+                'email' => $this->email,
             ],
         );
     }

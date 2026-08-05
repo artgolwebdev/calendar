@@ -353,7 +353,7 @@ class MonthPageSettingsTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function test_month_view_has_today_button_and_no_header_title_text(): void
+    public function test_month_view_has_today_button_and_blue_placeholder_when_no_cover_image(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-01-15'));
 
@@ -367,7 +367,9 @@ class MonthPageSettingsTest extends TestCase
         $response->assertOk();
         $response->assertSee('היום');
         $response->assertSee(route('calendars.month', [$monthPage->calendar, now()->month, now()->year]));
-        $response->assertDontSee('ינואר 2026');
+        $response->assertSee('bg-gradient-to-r from-[#4F46E5] to-[#6366F1]', false);
+        $response->assertSee('ינואר 2026', false);
+        $response->assertSee('· טבת 5786', false);
 
         Carbon::setTestNow();
     }

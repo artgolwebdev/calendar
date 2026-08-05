@@ -72,6 +72,18 @@
                         </div>
                     </div>
                 </div>
+            @else
+                <div class="rounded-xl overflow-hidden mb-6 relative bg-gradient-to-r from-[#4F46E5] to-[#6366F1]"
+                    style="height: 140px;">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center">
+                            <p class="text-white text-2xl font-bold px-4 py-1.5 bg-white/15 rounded-lg">
+                                {{ $monthNames[$monthPage->month_number] }} {{ $year }}
+                            </p>
+                            <p class="text-indigo-100 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
+                        </div>
+                    </div>
+                </div>
             @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">

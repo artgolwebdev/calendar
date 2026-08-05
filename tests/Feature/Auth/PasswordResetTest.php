@@ -70,7 +70,9 @@ class PasswordResetTest extends TestCase
             $this->assertStringContainsString('lang="he" dir="rtl"', $html);
             $this->assertStringContainsString('איפוס סיסמה', $html);
             $this->assertStringContainsString(config('app.name'), $html);
-            $this->assertStringContainsString(str_replace('@', '%40', $user->email), $html);
+            $this->assertStringContainsString($user->name, $html);
+            $this->assertStringContainsString($user->email, $html);
+            $this->assertStringContainsString('unicode-bidi:isolate', $html);
             $this->assertStringContainsString(
                 route('password.reset', ['token' => $notification->token, 'email' => $user->email]),
                 $html

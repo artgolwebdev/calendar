@@ -26,6 +26,21 @@ class FamilyEventGeneratorService
     }
 
     /**
+     * Create or update auto-generated events for all family members of the
+     * calendar's owner on a single calendar.
+     */
+    public function syncForCalendar(Calendar $calendar): void
+    {
+        foreach ($calendar->user->familyMembers as $member) {
+            $this->syncDateType($calendar, $member, 'birthday');
+
+            if ($member->anniversary_date) {
+                $this->syncDateType($calendar, $member, 'anniversary');
+            }
+        }
+    }
+
+    /**
      * Remove all auto-generated events for the member.
      */
     public function purgeForMember(FamilyMember $member): void

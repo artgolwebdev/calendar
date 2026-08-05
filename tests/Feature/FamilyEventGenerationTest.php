@@ -86,6 +86,41 @@ class FamilyEventGenerationTest extends TestCase
         ]);
     }
 
+    public function test_creating_calendar_after_members_syncs_auto_events_to_the_new_calendar(): void
+    {
+        $user = User::factory()->create();
+
+        $member = $user->familyMembers()->create([
+            'name' => 'דני',
+            'birth_date' => '1998-05-14',
+            'anniversary_date' => '2021-09-03',
+        ]);
+
+        $this->actingAs($user)->post('/calendars', [
+            'name' => 'לוח חדש',
+        ])->assertRedirect();
+
+        $calendar = $user->calendars()->first();
+
+        $birthday = CalendarEvent::where('calendar_id', $calendar->id)
+            ->where('family_member_id', $member->id)
+            ->where('event_type', 'birthday')
+            ->first();
+        $this->assertNotNull($birthday);
+        $this->assertTrue((bool) $birthday->is_auto_generated);
+        $this->assertSame('1998-05-14', $birthday->event_date->format('Y-m-d'));
+        $this->assertSame('יום הולדת - דני', $birthday->title);
+
+        $anniversary = CalendarEvent::where('calendar_id', $calendar->id)
+            ->where('family_member_id', $member->id)
+            ->where('event_type', 'anniversary')
+            ->first();
+        $this->assertNotNull($anniversary);
+        $this->assertTrue((bool) $anniversary->is_auto_generated);
+        $this->assertSame('2021-09-03', $anniversary->event_date->format('Y-m-d'));
+        $this->assertSame('יום נישואין - דני', $anniversary->title);
+    }
+
     public function test_updating_member_syncs_auto_event_date_and_title_without_duplicates(): void
     {
         $user = User::factory()->create();

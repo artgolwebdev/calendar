@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Calendar;
 use App\Models\FamilyMember;
+use App\Observers\CalendarObserver;
 use App\Observers\FamilyMemberObserver;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Calendar::observe(CalendarObserver::class);
         FamilyMember::observe(FamilyMemberObserver::class);
     }
 }

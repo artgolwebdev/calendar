@@ -12,9 +12,9 @@
 
 - **Multiple calendars** per user, each with its own cover image
 - **Yearly overview** — month tiles with background images and chips for events and Jewish holidays
-- **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation
+- **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation and a cover banner (blue gradient placeholder when the calendar has no cover image)
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
-- **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars, labeled with the member’s age or years married
+- **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars — regardless of whether the member or the calendar was created first — labeled with the member’s age or years married
 - **Calendar events** — birthdays, anniversaries, and custom events
 - **Password reset** — Hebrew RTL “forgot/reset password” pages with Hebrew validation messages and a branded Hebrew reset email sent via Resend
 - **Jewish holidays** — fetched from the Hebcal API and grouped per month
@@ -79,11 +79,11 @@ vendor/bin/pint --dirty
 
 ## How It Works
 
-- **Auto-generated family events** — creating or updating a `FamilyMember` fires `FamilyMemberObserver`, which uses `FamilyEventGeneratorService` to upsert one canonical birthday/anniversary event per date-type on every calendar owned by the user. Deleting a member removes their auto events. Events are stored with their original date, and the month/year views resolve them against the displayed year (Gregorian recurrence), handling February 29 gracefully and showing the member’s age or years married.
+- **Auto-generated family events** — creating or updating a `FamilyMember` fires `FamilyMemberObserver`, which uses `FamilyEventGeneratorService` to upsert one canonical birthday/anniversary event per date-type on every calendar owned by the user. Creating a calendar fires `CalendarObserver`, which syncs all existing members onto it, so events are generated regardless of creation order. Deleting a member removes their auto events. Events are stored with their original date, and the month/year views resolve them against the displayed year (Gregorian recurrence), handling February 29 gracefully and showing the member’s age or years married.
 
 - **Jewish holidays** — `IsraeliHolidaysService` queries the Hebcal API per year (cached) and the calendar views filter for major holidays.
 
-- **Password reset** — Breeze routes/controllers dispatch a `ResetPasswordNotification` that sends a branded Hebrew RTL email (`PasswordResetMail`) through the Resend mailer (`MAIL_MAILER=resend`, API key in `RESEND_KEY`). UI labels, inline validation errors, and broker status messages are translated via `lang/he`.
+- **Password reset** — Breeze routes/controllers dispatch a `ResetPasswordNotification` that sends a branded Hebrew RTL email (`PasswordResetMail`) through the Resend mailer (`MAIL_MAILER=resend`, API key in `RESEND_KEY`). The email is personalized with the recipient’s name and uses bidi-isolated spans so mixed Hebrew/English renders correctly. UI labels, inline validation errors, and broker status messages are translated via `lang/he`. After a successful reset the user is redirected to the login page.
 
 - **Design settings** — each of a calendar’s 12 month pages stores its own style; `MonthPageStyleService` resolves defaults and per-page overrides.
 
@@ -95,7 +95,7 @@ app/
 ├── Mail/                   PasswordResetMail (branded Hebrew RTL email)
 ├── Models/                 Calendar, CalendarEvent, FamilyMember, MonthPage, User
 ├── Notifications/          ResetPasswordNotification
-├── Observers/              FamilyMemberObserver
+├── Observers/              CalendarObserver, FamilyMemberObserver
 ├── Requests/               Form requests with validation
 ├── Policies/               FamilyMember, Calendar
 └── Services/
