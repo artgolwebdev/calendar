@@ -16,6 +16,7 @@
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
 - **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars, labeled with the member’s age or years married
 - **Calendar events** — birthdays, anniversaries, and custom events
+- **Password reset** — Hebrew RTL “forgot/reset password” pages with Hebrew validation messages and a branded Hebrew reset email sent via Resend
 - **Jewish holidays** — fetched from the Hebcal API and grouped per month
 - **Hebrew date conversion** — built-in service with leap-year support (אדר א׳ / אדר ב׳)
 - Fully **RTL** Hebrew UI, responsive down to mobile
@@ -28,6 +29,7 @@
 - Vite
 - SQLite (default)
 - PHPUnit
+- [Resend](https://resend.com) for transactional email (`resend/resend-laravel`)
 - [Hebcal API](https://www.hebcal.com/home/developer-apis) for Jewish holidays
 
 ## Requirements
@@ -81,14 +83,18 @@ vendor/bin/pint --dirty
 
 - **Jewish holidays** — `IsraeliHolidaysService` queries the Hebcal API per year (cached) and the calendar views filter for major holidays.
 
+- **Password reset** — Breeze routes/controllers dispatch a `ResetPasswordNotification` that sends a branded Hebrew RTL email (`PasswordResetMail`) through the Resend mailer (`MAIL_MAILER=resend`, API key in `RESEND_KEY`). UI labels, inline validation errors, and broker status messages are translated via `lang/he`.
+
 - **Design settings** — each of a calendar’s 12 month pages stores its own style; `MonthPageStyleService` resolves defaults and per-page overrides.
 
 ## Project Structure
 
 ```
 app/
-├── Http/Controllers/       Calendar, MonthPage, CalendarEvent, FamilyMember
+├── Http/Controllers/       Auth, Calendar, MonthPage, CalendarEvent, FamilyMember
+├── Mail/                   PasswordResetMail (branded Hebrew RTL email)
 ├── Models/                 Calendar, CalendarEvent, FamilyMember, MonthPage, User
+├── Notifications/          ResetPasswordNotification
 ├── Observers/              FamilyMemberObserver
 ├── Requests/               Form requests with validation
 ├── Policies/               FamilyMember, Calendar
@@ -97,13 +103,16 @@ app/
     ├── HebrewDateService
     ├── IsraeliHolidaysService
     └── MonthPageStyleService
+lang/he/                       Hebrew translations (validation, passwords, auth)
 resources/views/
+├── auth/                  Login, register, forgot/reset password (Hebrew RTL)
 ├── calendars/              Yearly + monthly views, design settings partial
 ├── calendar-events/        Event create/edit
+├── emails/                 password-reset.blade.php (RTL inline-styled)
 ├── family-members/         Member CRUD
 └── dashboard.blade.php     Dashboard
 tests/
-├── Feature/                Calendar, MonthPageSettings, FamilyEventGeneration, Dashboard
+├── Feature/                Auth, Calendar, MonthPageSettings, FamilyEventGeneration, Dashboard
 └── Unit/                   HebrewDateService
 ```
 

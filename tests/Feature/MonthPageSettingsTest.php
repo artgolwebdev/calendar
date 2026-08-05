@@ -347,7 +347,7 @@ class MonthPageSettingsTest extends TestCase
         $response->assertOk();
         $response->assertSee('bg-black/50', false);
         $response->assertSee('ינואר 2026', false);
-        $response->assertSee('· 5786', false);
+        $response->assertSee('· טבת 5786', false);
         $response->assertSee('text-white', false);
 
         Carbon::setTestNow();

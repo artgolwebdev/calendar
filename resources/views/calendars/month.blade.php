@@ -32,7 +32,11 @@
             5 => 'מאי', 6 => 'יוני', 7 => 'יולי', 8 => 'אוגוסט',
             9 => 'ספטמבר', 10 => 'אוקטובר', 11 => 'נובמבר', 12 => 'דצמבר'
         ];
-        $hebrewYear = app(\App\Services\HebrewDateService::class)->toHebrewArray(
+        $hebrewDateService = app(\App\Services\HebrewDateService::class);
+        $hebrewMonthName = $hebrewDateService->hebrewMonthName(
+            \Carbon\Carbon::create($year, $monthPage->month_number, 1)
+        );
+        $hebrewYear = $hebrewDateService->toHebrewArray(
             \Carbon\Carbon::create($year, $monthPage->month_number, 1)
         )['year'];
     @endphp
@@ -64,7 +68,7 @@
                             <p class="text-white text-2xl font-bold px-4 py-1.5 bg-black/50 rounded-lg">
                                 {{ $monthNames[$monthPage->month_number] }} {{ $year }}
                             </p>
-                            <p class="text-white/90 text-sm mt-1.5">· {{ $hebrewYear }}</p>
+                            <p class="text-white/90 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
                         </div>
                     </div>
                 </div>
