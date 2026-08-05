@@ -4,8 +4,13 @@ namespace App\Providers;
 
 use App\Models\Calendar;
 use App\Models\FamilyMember;
+use App\Models\Folder;
+use App\Models\Media;
 use App\Observers\CalendarObserver;
 use App\Observers\FamilyMemberObserver;
+use App\Policies\FolderPolicy;
+use App\Policies\MediaPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +30,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Calendar::observe(CalendarObserver::class);
         FamilyMember::observe(FamilyMemberObserver::class);
+
+        Gate::policy(Media::class, MediaPolicy::class);
+        Gate::policy(Folder::class, FolderPolicy::class);
     }
 }

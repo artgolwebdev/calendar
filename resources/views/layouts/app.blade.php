@@ -266,6 +266,10 @@
                 background-color: #E0F2FE;
                 color: #0369A1;
             }
+
+            [x-cloak] {
+                display: none;
+            }
         </style>
 
         <!-- Scripts -->

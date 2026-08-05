@@ -44,6 +44,7 @@ class UpdateMonthPageRequest extends FormRequest
             'weekday_color' => ['sometimes', 'nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'show_adjacent_month_days' => ['sometimes', 'nullable', 'boolean'],
             'custom_image_path' => ['sometimes', 'nullable', 'image', 'max:10240'],
+            'background_media_id' => ['sometimes', 'nullable', 'integer', 'exists:media,id'],
         ];
     }
 }

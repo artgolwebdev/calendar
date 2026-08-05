@@ -14,6 +14,8 @@
 - **Yearly overview** — month tiles with background images and chips for events and Jewish holidays
 - **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation and a cover banner (blue gradient placeholder when the calendar has no cover image)
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
+- **Media library** — a personal, per-user image library (`spatie/laravel-medialibrary`) with bulk upload, live previews and per-file progress bars, rename/delete, and a picker that lets you reuse a library image as a month background alongside the existing direct upload
+- **Media folders** — organize library images into folders via drag-and-drop or a per-image dropdown; every family member gets an auto-synced folder, and deleting a folder never deletes its media
 - **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars — regardless of whether the member or the calendar was created first — labeled with the member’s age or years married
 - **Calendar events** — birthdays, anniversaries, and custom events
 - **Password reset** — Hebrew RTL “forgot/reset password” pages with Hebrew validation messages and a branded Hebrew reset email sent via Resend
@@ -30,6 +32,7 @@
 - SQLite (default)
 - PHPUnit
 - [Resend](https://resend.com) for transactional email (`resend/resend-laravel`)
+- [Spatie Media Library](https://spatie.be/docs/laravel-medialibrary) (`spatie/laravel-medialibrary`) for the user media library
 - [Hebcal API](https://www.hebcal.com/home/developer-apis) for Jewish holidays
 
 ## Requirements
@@ -87,19 +90,24 @@ vendor/bin/pint --dirty
 
 - **Design settings** — each of a calendar’s 12 month pages stores its own style; `MonthPageStyleService` resolves defaults and per-page overrides.
 
+- **Media library** — the `User` model uses `InteractsWithMedia` with a `user_media` collection and a `thumb` conversion. A `MediaPolicy` scopes every item to its owner (view/update/delete are forbidden across users), and deleting an item first nulls any `month_pages.background_media_id` references so no orphaned backgrounds remain. A month background can come from either the media library (`background_media_id`, resolved first) or a direct upload / legacy path (`custom_image_path` / `background_image_path`), with a picker in the month design settings.
+
+- **Media folders** — the library is organized into folders (`Folder` model, unique `user_id`+`name`, owned via `FolderPolicy`). The index page shows a sidebar with "All media" plus every folder; images are moved either by drag-and-drop onto a folder or from a per-image dropdown. Deleting a folder never deletes its media — the `folder_id` foreign key is `nullOnDelete`, so items simply return to All Media. Every family member gets an auto-synced folder: `FamilyMemberObserver` creates it on member creation, keeps its name in sync on updates (member-linked folders can't be renamed/deleted manually), and removes it when the member is deleted. `php artisan folders:backfill` creates folders for any members that predate the feature.
+
 ## Project Structure
 
 ```
 app/
-├── Http/Controllers/       Auth, Calendar, MonthPage, CalendarEvent, FamilyMember
+├── Http/Controllers/       Auth, Calendar, MonthPage, CalendarEvent, FamilyMember, Media, Folder
 ├── Mail/                   PasswordResetMail (branded Hebrew RTL email)
-├── Models/                 Calendar, CalendarEvent, FamilyMember, MonthPage, User
+├── Models/                 Calendar, CalendarEvent, FamilyMember, Folder, Media, MonthPage, User
 ├── Notifications/          ResetPasswordNotification
 ├── Observers/              CalendarObserver, FamilyMemberObserver
 ├── Requests/               Form requests with validation
-├── Policies/               FamilyMember, Calendar
+├── Policies/               FamilyMember, Calendar, Media, Folder
 └── Services/
     ├── FamilyEventGeneratorService
+    ├── FolderSyncService
     ├── HebrewDateService
     ├── IsraeliHolidaysService
     └── MonthPageStyleService
@@ -110,9 +118,10 @@ resources/views/
 ├── calendar-events/        Event create/edit
 ├── emails/                 password-reset.blade.php (RTL inline-styled)
 ├── family-members/         Member CRUD
+├── media/                  Media library index (sidebar with folders, bulk upload, rename/delete/move)
 └── dashboard.blade.php     Dashboard
 tests/
-├── Feature/                Auth, Calendar, MonthPageSettings, FamilyEventGeneration, Dashboard
+├── Feature/                Auth, Calendar, MonthPageSettings, FamilyEventGeneration, MediaLibrary, MediaFolder, Dashboard
 └── Unit/                   HebrewDateService
 ```
 

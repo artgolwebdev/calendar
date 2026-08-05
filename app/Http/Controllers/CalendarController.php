@@ -116,11 +116,17 @@ class CalendarController extends Controller
             $monthEvents = $eventsByMonth->get($monthPage->month_number, collect());
             $monthHolidays = $holidaysByMonth->get($monthPage->month_number, collect());
 
-            $imagePath = $monthPage->custom_image_path ?? $monthPage->background_image_path;
+            $imageUrl = null;
+
+            if ($monthPage->background_media_id && $monthPage->backgroundMedia) {
+                $imageUrl = $monthPage->backgroundMedia->getUrl();
+            } elseif ($imagePath = $monthPage->custom_image_path ?? $monthPage->background_image_path) {
+                $imageUrl = asset('storage/'.$imagePath);
+            }
 
             $monthInfo[$monthPage->month_number] = [
                 'hebrew_month' => $this->hebrewDateService->hebrewMonthName($startDate),
-                'background_image_url' => $imagePath ? asset('storage/'.$imagePath) : null,
+                'background_image_url' => $imageUrl,
                 'events_count' => $monthEvents->count(),
                 'events' => $monthEvents->take(3)
                     ->map(fn (CalendarEvent $event) => ['title' => $event->display_title, 'type' => $event->event_type])
@@ -232,6 +238,8 @@ class CalendarController extends Controller
         $previousMonth = $currentDate->copy()->subMonth();
         $nextMonth = $currentDate->copy()->addMonth();
 
-        return view('calendars.month', compact('calendar', 'monthPage', 'events', 'holidays', 'year', 'previousMonth', 'nextMonth'));
+        $userMedia = Auth::user()->getMedia('user_media');
+
+        return view('calendars.month', compact('calendar', 'monthPage', 'events', 'holidays', 'year', 'previousMonth', 'nextMonth', 'userMedia'));
     }
 }

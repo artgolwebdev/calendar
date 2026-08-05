@@ -66,6 +66,49 @@
             </div>
 
             <div>
+                <label class="label">רקע מהספרייה</label>
+                <input type="hidden" name="background_media_id" id="background_media_id"
+                    value="{{ $monthPage->background_media_id }}">
+
+                <div id="selectedMediaPreview"
+                    class="flex items-center justify-between p-2 bg-[#F7F7F8] border border-[#E5E5E8] rounded-lg">
+                    @if ($monthPage->background_media_id && $monthPage->backgroundMedia)
+                        <img src="{{ $monthPage->backgroundMedia->getUrl('thumb') }}" alt="הרקע הנבחר מהספרייה"
+                            class="h-12 w-16 object-cover rounded border border-[#E5E5E8]">
+                        <button type="button" onclick="clearSelectedMedia()"
+                            class="text-xs font-medium text-[#DC2626] hover:text-[#B91C1C] transition-colors">
+                            הסר בחירה
+                        </button>
+                    @else
+                        <span class="text-xs text-[#6B6B75]">לא נבחר רקע מהספרייה</span>
+                    @endif
+                </div>
+
+                @if ($userMedia->isNotEmpty())
+                    <details class="mt-2">
+                        <summary
+                            class="text-xs font-medium text-[#4F46E5] cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                            בחירת תמונה מהספרייה
+                        </summary>
+                        <div class="mt-2 grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                            @foreach ($userMedia as $media)
+                                <button type="button" onclick="pickMedia({{ $media->id }}, '{{ $media->getUrl('thumb') }}')"
+                                    class="relative rounded border overflow-hidden transition-colors {{ $monthPage->background_media_id === $media->id ? 'border-[#4F46E5] ring-2 ring-[#4F46E5]/30' : 'border-[#E5E5E8] hover:border-[#4F46E5]' }}">
+                                    <img src="{{ $media->getUrl('thumb') }}" alt="{{ $media->name }}"
+                                        class="h-16 w-full object-cover">
+                                </button>
+                            @endforeach
+                        </div>
+                    </details>
+                @else
+                    <a href="{{ route('media.index') }}"
+                        class="mt-2 inline-block text-xs font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors">
+                        הוספת תמונות לספרייה
+                    </a>
+                @endif
+            </div>
+
+            <div>
                 <label for="overlay_opacity" class="label flex justify-between">
                     <span>אטימות שכבת העל</span>
                     <span class="text-xs font-normal text-[#6B6B75]"><span id="overlayValue">{{ $monthPage->overlay_opacity ?? 30 }}</span>%</span>
@@ -134,3 +177,18 @@
         </span>
     </button>
 </div>
+
+<script>
+    function pickMedia(id, url) {
+        document.getElementById('background_media_id').value = id;
+        document.getElementById('selectedMediaPreview').innerHTML =
+            '<img src="' + url + '" alt="הרקע הנבחר מהספרייה" class="h-12 w-16 object-cover rounded border border-[#E5E5E8]">' +
+            '<button type="button" onclick="clearSelectedMedia()" class="text-xs font-medium text-[#DC2626] hover:text-[#B91C1C] transition-colors">הסר בחירה</button>';
+    }
+
+    function clearSelectedMedia() {
+        document.getElementById('background_media_id').value = '';
+        document.getElementById('selectedMediaPreview').innerHTML =
+            '<span class="text-xs text-[#6B6B75]">לא נבחר רקע מהספרייה</span>';
+    }
+</script>

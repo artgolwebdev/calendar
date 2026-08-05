@@ -12,6 +12,7 @@ class MonthPage extends Model
         'month_number',
         'font_choice',
         'background_image_path',
+        'background_media_id',
         'custom_image_path',
         'overlay_opacity',
         'day_box_bg_color',
@@ -24,5 +25,10 @@ class MonthPage extends Model
     public function calendar(): BelongsTo
     {
         return $this->belongsTo(Calendar::class);
+    }
+
+    public function backgroundMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'background_media_id');
     }
 }

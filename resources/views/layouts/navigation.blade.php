@@ -21,6 +21,10 @@
                        class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors {{ request()->routeIs('family-members.*') ? 'border-[#4F46E5] text-[#1A1A1E]' : 'border-transparent text-[#6B6B75] hover:text-[#1A1A1E]' }}">
                         חברי משפחה
                     </a>
+                    <a href="{{ route('media.index') }}" 
+                       class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors {{ request()->routeIs('media.*') ? 'border-[#4F46E5] text-[#1A1A1E]' : 'border-transparent text-[#6B6B75] hover:text-[#1A1A1E]' }}">
+                        הספרייה שלי
+                    </a>
                 </div>
             </div>
 
@@ -73,6 +77,10 @@
             <a href="{{ route('family-members.index') }}" 
                class="block px-4 py-2 text-sm font-medium transition-colors {{ request()->routeIs('family-members.*') ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#6B6B75] hover:bg-[#F7F7F8] hover:text-[#1A1A1E]' }}">
                 חברי משפחה
+            </a>
+            <a href="{{ route('media.index') }}" 
+               class="block px-4 py-2 text-sm font-medium transition-colors {{ request()->routeIs('media.*') ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#6B6B75] hover:bg-[#F7F7F8] hover:text-[#1A1A1E]' }}">
+                הספרייה שלי
             </a>
         </div>
 

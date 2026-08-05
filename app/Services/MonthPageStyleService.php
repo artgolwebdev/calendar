@@ -68,6 +68,12 @@ class MonthPageStyleService
 
     public function gridBackground(MonthPage $monthPage): string
     {
+        if ($monthPage->background_media_id && $media = $monthPage->backgroundMedia) {
+            $url = $media->getUrl();
+
+            return "background-image: url('{$url}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
+        }
+
         $path = $monthPage->custom_image_path ?? $monthPage->background_image_path;
 
         if (! $path) {
