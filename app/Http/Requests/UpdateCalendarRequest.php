@@ -25,6 +25,7 @@ class UpdateCalendarRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'cover_image_path' => 'nullable|image|max:51200', // Max 50MB
+            'is_main' => 'sometimes|boolean',
         ];
     }
 }

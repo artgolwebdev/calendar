@@ -1,23 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 class="text-2xl font-semibold text-[#1A1A1E]">לוח השנה שלי</h1>
-                <p class="text-xs text-[#6B6B75] mt-1">נהל וצפה בלוחות השנה המשפחתיים שלך</p>
-            </div>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <a href="{{ route('family-members.index') }}"
-                    class="btn btn-secondary btn-sm flex-1 sm:flex-none justify-center">
-                    חברי משפחה
-                </a>
-                <a href="{{ route('calendars.create') }}"
-                    class="btn btn-primary btn-sm flex-1 sm:flex-none justify-center">
-                    + צור לוח שנה חדש
-                </a>
-            </div>
-        </div>
-    </x-slot>
-
     <div class="py-8">
         <div class="container">
             @if (session('success'))
@@ -26,8 +7,14 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @forelse (auth()->user()->calendars as $calendar)
+            <x-dashboard.day-scroller
+                :days="$days"
+                :main-calendar="$mainCalendar"
+                :month="$month"
+                :year="$year" />
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse ($calendars as $calendar)
                     <div class="card overflow-hidden transition-colors hover:border-[#D4D4D8]">
                         @if ($calendar->cover_image_path)
                             <div class="h-36 bg-cover bg-center border-b border-[#E5E5E8]" style="background-image: url('{{ asset('storage/' . $calendar->cover_image_path) }}');"></div>
@@ -39,14 +26,17 @@
                             </div>
                         @endif
                         <div class="p-5">
-                            <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-start justify-between mb-2 gap-2">
                                 <h3 class="text-base font-semibold text-[#1A1A1E] truncate">{{ $calendar->name }}</h3>
+                                @if ($calendar->is_main)
+                                    <span class="chip chip-birthday text-[10px] shrink-0">ראשי</span>
+                                @endif
                             </div>
                             <p class="text-xs text-[#6B6B75] mb-5">
                                 נוצר בתאריך: {{ $calendar->created_at->format('d/m/Y') }}
                             </p>
                             <div class="flex items-center gap-2">
-                                <a href="{{ route('calendars.show', $calendar) }}" 
+                                <a href="{{ route('calendars.show', $calendar) }}"
                                     class="btn btn-secondary flex-1 text-center justify-center">
                                     צפה בלוח
                                 </a>

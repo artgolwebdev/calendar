@@ -35,6 +35,19 @@
                         <p class="text-xs text-[#6B6B75] mt-1">גודל מקסימלי: 50MB</p>
                     </div>
 
+                    <div class="flex items-start gap-3 p-4 bg-[#F7F7F8] border border-[#E5E5E8] rounded-lg">
+                        <input type="hidden" name="is_main" value="0">
+                        <input type="checkbox" name="is_main" id="is_main" value="1"
+                            @checked($calendar->is_main)
+                            class="mt-1 h-4 w-4 rounded border-[#D1D1D8] text-[#4F46E5] focus:ring-[#4F46E5]">
+                        <label for="is_main" class="text-sm text-[#1A1A1E] cursor-pointer">
+                            <span class="font-medium">לוח שנה ראשי</span>
+                            <span class="block text-xs text-[#6B6B75] font-normal mt-0.5">
+                                לוח השנה הראשי מוצג בלוח הבקרה ובסקירת החודש הנוכחי
+                            </span>
+                        </label>
+                    </div>
+
                     @if ($errors->any())
                         <div class="p-4 rounded-lg bg-[#FEF2F2] border border-[#FCA5A5] text-sm text-[#DC2626]">
                             <ul class="list-disc list-inside space-y-1">

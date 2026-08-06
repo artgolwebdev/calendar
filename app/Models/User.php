@@ -39,6 +39,22 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(Calendar::class);
     }
 
+    /**
+     * Resolve the user's main calendar: the explicitly marked one, falling
+     * back to the oldest calendar so the dashboard always has something.
+     */
+    public function mainCalendar(): ?Calendar
+    {
+        return $this->calendars()
+            ->where('is_main', true)
+            ->orderBy('id')
+            ->first()
+            ?? $this->calendars()
+                ->orderBy('created_at')
+                ->orderBy('id')
+                ->first();
+    }
+
     public function familyMembers(): HasMany
     {
         return $this->hasMany(FamilyMember::class);

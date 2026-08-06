@@ -42,6 +42,13 @@
 
                     <div id="userDropdown" class="hidden absolute left-0 mt-2 w-48 bg-white border border-[#E5E5E8] rounded-lg shadow-sm overflow-hidden z-50">
                         <div class="py-1">
+                            <a href="{{ route('calendars.create') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-[#1A1A1E] hover:bg-[#F7F7F8] transition-colors">
+                                <svg class="w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                לוח שנה חדש
+                            </a>
+                            <div class="border-t border-[#E5E5E8] my-1"></div>
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-[#1A1A1E] hover:bg-[#F7F7F8] transition-colors">
                                 פרופיל
                             </a>
@@ -92,6 +99,14 @@
             </div>
 
             <div class="space-y-1">
+                <a href="{{ route('calendars.create') }}"
+                   class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#6B6B75] hover:bg-[#F7F7F8] hover:text-[#1A1A1E] transition-colors">
+                    <svg class="w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    לוח שנה חדש
+                </a>
+
                 <a href="{{ route('profile.edit') }}" 
                    class="block px-4 py-2 text-sm font-medium text-[#6B6B75] hover:bg-[#F7F7F8] hover:text-[#1A1A1E] transition-colors">
                     פרופיל

@@ -12,6 +12,11 @@ class Calendar extends Model
         'user_id',
         'name',
         'cover_image_path',
+        'is_main',
+    ];
+
+    protected $casts = [
+        'is_main' => 'boolean',
     ];
 
     public function user(): BelongsTo

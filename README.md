@@ -11,6 +11,8 @@
 ## Features
 
 - **Multiple calendars** per user, each with its own cover image
+- **Main calendar** — users can mark one calendar as their main one (falling back to the oldest); it powers the dashboard day scroller
+- **Dashboard day scroller** — a 14-day RTL horizontal strip for the main calendar with prev/next arrow buttons, click-and-drag scrolling, and automatic smooth centering on today on load
 - **Yearly overview** — month tiles with background images and chips for events and Jewish holidays
 - **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation and a cover banner (blue gradient placeholder when the calendar has no cover image)
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
@@ -98,7 +100,7 @@ vendor/bin/pint --dirty
 
 ```
 app/
-├── Http/Controllers/       Auth, Calendar, MonthPage, CalendarEvent, FamilyMember, Media, Folder
+├── Http/Controllers/       Auth, Calendar, CalendarEvent, Dashboard, FamilyMember, Media, Folder, MonthPage
 ├── Mail/                   PasswordResetMail (branded Hebrew RTL email)
 ├── Models/                 Calendar, CalendarEvent, FamilyMember, Folder, Media, MonthPage, User
 ├── Notifications/          ResetPasswordNotification
@@ -106,6 +108,7 @@ app/
 ├── Requests/               Form requests with validation
 ├── Policies/               FamilyMember, Calendar, Media, Folder
 └── Services/
+    ├── CalendarMonthDataService
     ├── FamilyEventGeneratorService
     ├── FolderSyncService
     ├── HebrewDateService
@@ -116,12 +119,13 @@ resources/views/
 ├── auth/                  Login, register, forgot/reset password (Hebrew RTL)
 ├── calendars/              Yearly + monthly views, design settings partial
 ├── calendar-events/        Event create/edit
+├── components/dashboard/   Dashboard day-scroller (RTL strip, arrows, drag, auto-scroll)
 ├── emails/                 password-reset.blade.php (RTL inline-styled)
 ├── family-members/         Member CRUD
 ├── media/                  Media library index (sidebar with folders, bulk upload, rename/delete/move)
 └── dashboard.blade.php     Dashboard
 tests/
-├── Feature/                Auth, Calendar, MonthPageSettings, FamilyEventGeneration, MediaLibrary, MediaFolder, Dashboard
+├── Feature/                Auth, Calendar, Dashboard, FamilyEventGeneration, MainCalendar, MediaFolder, MediaLibrary, MonthPageSettings
 └── Unit/                   HebrewDateService
 ```
 

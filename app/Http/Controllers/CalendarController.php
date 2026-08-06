@@ -6,12 +6,14 @@ use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
+use App\Services\CalendarMonthDataService;
 use App\Services\FamilyEventGeneratorService;
 use App\Services\HebrewDateService;
 use App\Services\IsraeliHolidaysService;
 use App\Services\MonthPageStyleService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CalendarController extends Controller
 {
@@ -21,14 +23,18 @@ class CalendarController extends Controller
 
     protected FamilyEventGeneratorService $familyEventGeneratorService;
 
+    protected CalendarMonthDataService $calendarMonthDataService;
+
     public function __construct(
         HebrewDateService $hebrewDateService,
         MonthPageStyleService $monthPageStyleService,
-        FamilyEventGeneratorService $familyEventGeneratorService
+        FamilyEventGeneratorService $familyEventGeneratorService,
+        CalendarMonthDataService $calendarMonthDataService
     ) {
         $this->hebrewDateService = $hebrewDateService;
         $this->monthPageStyleService = $monthPageStyleService;
         $this->familyEventGeneratorService = $familyEventGeneratorService;
+        $this->calendarMonthDataService = $calendarMonthDataService;
     }
 
     /**
@@ -175,7 +181,19 @@ class CalendarController extends Controller
             $data['cover_image_path'] = $path;
         }
 
-        $calendar->update($data);
+        $shouldBeMain = (bool) ($data['is_main'] ?? false);
+        $data['is_main'] = $shouldBeMain;
+
+        DB::transaction(function () use ($calendar, $data, $shouldBeMain) {
+            $calendar->update($data);
+
+            // Only one calendar can be the main calendar per user
+            if ($shouldBeMain) {
+                $calendar->user->calendars()
+                    ->whereKeyNot($calendar->id)
+                    ->update(['is_main' => false]);
+            }
+        });
 
         return redirect()->route('calendars.show', $calendar)
             ->with('success', 'לוח השנה עודכן בהצלחה');
@@ -206,32 +224,10 @@ class CalendarController extends Controller
 
         // Get events for this month, resolving auto-generated recurring family
         // events against the displayed year
-        $events = $this->familyEventGeneratorService->resolveForYear(
-            $calendar->calendarEvents()
-                ->where('is_auto_generated', false)
-                ->whereYear('event_date', $year)
-                ->whereMonth('event_date', $monthNumber)
-                ->with('familyMember')
-                ->get()
-                ->merge(
-                    $calendar->calendarEvents()
-                        ->where('is_auto_generated', true)
-                        ->with('familyMember')
-                        ->get()
-                ),
-            $year
-        )->filter(fn (CalendarEvent $event) => $event->display_date->month === $monthNumber)
-            ->sortBy(fn (CalendarEvent $event) => $event->display_date)
-            ->values();
+        $events = $this->calendarMonthDataService->eventsForMonth($calendar, $year, $monthNumber);
 
         // Get Israeli holidays for this month
-        try {
-            $israeliHolidaysService = app(IsraeliHolidaysService::class);
-            $holidays = $israeliHolidaysService->getHolidaysForMonth($year, $monthNumber);
-        } catch (\Exception $e) {
-            $holidays = [];
-            \Log::error('Error fetching holidays: '.$e->getMessage());
-        }
+        $holidays = $this->calendarMonthDataService->holidaysForMonth($year, $monthNumber);
 
         // Calculate navigation dates
         $currentDate = Carbon::create($year, $monthNumber, 1);

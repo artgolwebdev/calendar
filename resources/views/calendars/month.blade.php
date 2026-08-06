@@ -186,6 +186,7 @@
                                     @if ($isCurrentMonth || ($monthPage->show_adjacent_month_days && !$isCurrentMonth))
                                         <a href="{{ route('calendar-events.create', $calendar) }}?date={{ $currentDate->format('Y-m-d') }}"
                                             class="day-cell min-h-16 sm:min-h-24 p-1.5 sm:p-2 rounded-lg cursor-pointer transition-colors border block {{ $isToday ? 'day-cell-today' : '' }} {{ !$isCurrentMonth ? 'day-cell-adjacent' : '' }}"
+                                            @if ($isCurrentMonth) data-day="{{ $displayDay }}" @endif
                                             @if ($isToday)
                                                 style="background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-white);"
                                             @elseif ($isCurrentMonth)
@@ -384,6 +385,19 @@
 
                 settingsForm.addEventListener('input', syncSaveCta);
                 settingsForm.addEventListener('change', syncSaveCta);
+            }
+
+            // Scroll to a day requested via ?day= (from the dashboard day scroller)
+            const requestedDay = new URLSearchParams(window.location.search).get('day');
+            if (requestedDay) {
+                const cell = document.querySelector('.day-cell[data-day="' + requestedDay + '"]');
+                if (cell) {
+                    cell.scrollIntoView({ block: 'nearest', inline: 'center' });
+                    cell.style.boxShadow = '0 0 0 3px var(--color-accent-ring)';
+                    setTimeout(function () {
+                        cell.style.boxShadow = '';
+                    }, 2000);
+                }
             }
         });
     </script>
