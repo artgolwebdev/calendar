@@ -6,7 +6,7 @@
 ])
 
 @if ($mainCalendar && $days->isNotEmpty())
-    <div class="day-scroller" x-data="dayScroller()" x-init="init()">
+    <div class="day-scroller" x-data="dayScroller()">
         <div class="card relative overflow-hidden p-3 sm:p-4">
             <div class="flex items-center justify-between gap-2 px-1 mb-3">
                 <span class="chip chip-event text-[10px] shrink-0">
@@ -21,26 +21,26 @@
                 </a>
             </div>
 
-            <div class="relative">
+            <div class="relative" dir="ltr">
                 <button type="button" aria-label="ימים מוקדמים יותר"
                     @click="scrollDayStrip('prev')"
-                    class="day-scroller-arrow hidden sm:flex absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
+                    class="day-scroller-arrow day-scroller-arrow--prev hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <button type="button" aria-label="ימים מאוחרים יותר"
                     @click="scrollDayStrip('next')"
-                    class="day-scroller-arrow hidden sm:flex absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
+                    class="day-scroller-arrow day-scroller-arrow--next hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
 
                 <div x-ref="track"
                     class="day-scroller-track bg-[#F3F4F6] rounded-xl flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth px-10 py-2.5">
                     @foreach ($days as $day)
-                        <a href="{{ route('calendars.month', [$mainCalendar, $day['month'], $day['year']]) }}?day={{ $day['day'] }}"
+                        <a href="{{ route('calendars.day', [$mainCalendar, $day['date']]) }}"
                             class="day-scroller-card shrink-0 w-36 sm:w-40 md:w-44 h-44 sm:h-48 md:h-52 lg:h-56 snap-center rounded-lg flex flex-col items-stretch p-3 sm:p-4 transition-colors {{ $day['is_today'] ? 'bg-[#4F46E5] shadow-md shadow-[#4F46E5]/25' : 'bg-white' }}"
                             @if ($day['is_today']) data-day-scroll-target="today" @endif>
                             <div class="flex items-center justify-between gap-1">
@@ -103,6 +103,21 @@
         will-change: transform, opacity;
     }
 
+    /* The arrow buttons live inside a dir="ltr" viewport while the page stays
+       RTL. The tailwindcss-rtl plugin emits [dir="rtl"] and [dir="ltr"] physical
+       fallbacks for its own start and end inset utilities, and since the html
+       element carries dir="rtl", both fallbacks fire at once on buttons nested in
+       a local dir="ltr" wrapper (they end up with both left and right set).
+       Scope the inset through plain logical properties instead so the browser
+       resolves a single physical edge from the local dir="ltr". */
+    .day-scroller-arrow--prev {
+        inset-inline-start: 0.375rem;
+    }
+
+    .day-scroller-arrow--next {
+        inset-inline-end: 0.375rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .day-scroller-track {
             scroll-behavior: auto;
@@ -156,13 +171,14 @@
             },
             // Physical cursor delta -> container scrollLeft delta.
             //
-            // Diagnosed in Edge and Firefox (native wheel, no custom JS): this
-            // strip's RTL scrollLeft runs from 0 (start / earliest days) down to
-            // -max (end / latest days), and mirrors the input directly
-            // (scrolling right adds to scrollLeft, back toward 0). So a rightward
-            // drag (positive delta) increases scrollLeft and reveals earlier
-            // days; a leftward drag decreases it and reveals later days.
-            // Legacy non-negative implementations mirror the sign.
+            // The probe in detectsNegativeScroll() determines the browser's
+            // scrollLeft convention for this strip. Under RTL the value runs from
+            // 0 (start / earliest days) down to -max (end / latest days) and
+            // mirrors the input directly, so a rightward drag (positive delta)
+            // increases scrollLeft toward 0 and reveals earlier days. Under the
+            // LTR wrapper the value runs 0..+max and inverts the sign, keeping
+            // the same physical result: a rightward drag always reveals earlier
+            // days, a leftward drag later days.
             physicalDeltaToScrollLeft(delta) {
                 return this.usesNegativeScroll ? delta : -delta;
             },
@@ -175,13 +191,16 @@
                     target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 }
             },
-            // direction: 'next' = later days (left side in RTL), 'prev' = earlier
-            // days (right side). Picks the card at the strip's leading edge and
-            // centers it via scrollIntoView, keeping a single sign-agnostic path
-            // for both arrow buttons (and the same primitive the auto-scroll uses).
+            // direction: 'next' = later days, 'prev' = earlier days. Picks the
+            // card at the strip's leading edge and centers it via scrollIntoView,
+            // keeping a single sign-agnostic path for both arrow buttons (and the
+            // same primitive the auto-scroll uses). The strip flows left-to-right
+            // (dir="ltr"), so later days sit at the right edge; the direction is
+            // resolved from the computed style so a future RTL revert keeps working.
             scrollDayStrip(direction) {
                 const cards = Array.from(this.track.querySelectorAll('.day-scroller-card'));
                 const viewport = this.track.getBoundingClientRect();
+                const isRtl = getComputedStyle(this.track).direction === 'rtl';
 
                 let target = null;
                 let bestDist = Infinity;
@@ -189,7 +208,12 @@
                 for (const card of cards) {
                     const rect = card.getBoundingClientRect();
                     const center = rect.left + rect.width / 2;
-                    const dist = direction === 'next' ? center - viewport.left : viewport.right - center;
+                    const edge = direction === 'next'
+                        ? (isRtl ? viewport.left : viewport.right)
+                        : (isRtl ? viewport.right : viewport.left);
+                    const dist = direction === 'next'
+                        ? (isRtl ? center - edge : edge - center)
+                        : (isRtl ? edge - center : center - edge);
                     if (dist < 0) continue;
                     if (dist < bestDist) {
                         bestDist = dist;
@@ -236,9 +260,8 @@
                     drag.moved = true;
                 }
 
-                // Mirrors the confirmed native RTL convention: a rightward drag
-                // (positive delta) increases scrollLeft toward 0 and reveals
-                // earlier days; a leftward drag reveals later days.
+                // Content follows the cursor in both directions: a rightward drag
+                // (positive delta) reveals earlier days, a leftward drag later days.
                 this.track.scrollLeft = drag.startScrollLeft + this.physicalDeltaToScrollLeft(delta);
             },
             onPointerUp(e) {
@@ -280,6 +303,21 @@
                     e.preventDefault();
                     e.stopPropagation();
                     this.suppressClick = false;
+                    return;
+                }
+
+                // Pointer capture retargets the click to the track, so the
+                // day-card anchor never receives it (clicking a card does not
+                // navigate). For a genuine left click, resolve the element
+                // under the cursor and navigate to its card manually.
+                if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                    const hit = document.elementFromPoint(e.clientX, e.clientY);
+                    const link = hit && hit.closest ? hit.closest('a.day-scroller-card') : null;
+                    if (link) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = link.href;
+                    }
                 }
             },
             onScroll() {

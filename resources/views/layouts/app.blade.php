@@ -289,7 +289,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="lg:ps-72">
                 {{ $slot }}
             </main>
         </div>

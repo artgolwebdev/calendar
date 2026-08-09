@@ -89,7 +89,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                 <!-- Calendar Grid -->
                 <div class="lg:col-span-3">
-                    <div id="calendarGrid" class="card p-3 sm:p-6 relative overflow-hidden"
+                    <div id="calendarGrid" dir="ltr" class="card p-3 sm:p-6 relative overflow-hidden"
                         style="font-family: {{ $styles['fontFamily'] }}; {{ $styles['gridBackground'] }} min-height: 600px;">
                         <div id="gridOverlay" class="absolute inset-0 rounded-lg pointer-events-none"
                             style="{{ $styles['overlay'] }}"></div>
@@ -184,7 +184,7 @@
                                     @endphp
 
                                     @if ($isCurrentMonth || ($monthPage->show_adjacent_month_days && !$isCurrentMonth))
-                                        <a href="{{ route('calendar-events.create', $calendar) }}?date={{ $currentDate->format('Y-m-d') }}"
+                                        <a href="{{ route('calendars.day', [$calendar, $currentDate->format('Y-m-d')]) }}"
                                             class="day-cell min-h-16 sm:min-h-24 p-1.5 sm:p-2 rounded-lg cursor-pointer transition-colors border block {{ $isToday ? 'day-cell-today' : '' }} {{ !$isCurrentMonth ? 'day-cell-adjacent' : '' }}"
                                             @if ($isCurrentMonth) data-day="{{ $displayDay }}" @endif
                                             @if ($isToday)

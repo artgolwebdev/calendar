@@ -25,7 +25,7 @@ class DashboardTest extends TestCase
         $response->assertDontSee('נהל וצפה בלוחות השנה המשפחתיים שלך');
     }
 
-    public function test_create_calendar_trigger_is_in_profile_dropdown(): void
+    public function test_create_calendar_trigger_is_in_side_menu(): void
     {
         $user = User::factory()->create();
 
@@ -33,9 +33,10 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeInOrder([
-            'userDropdown',
             route('calendars.create'),
             'לוח שנה חדש',
+            'חברי משפחה',
+            'הספרייה שלי',
             'פרופיל',
         ]);
     }
@@ -67,7 +68,7 @@ class DashboardTest extends TestCase
         $response->assertSee('לוח ראשי: לוח משפחתי');
         $response->assertSee('החודש המלא');
         $response->assertSee('data-day-scroll-target="today"', false);
-        $response->assertSee(route('calendars.month', [$calendar, 3, 2026]).'?day=15');
+        $response->assertSee(route('calendars.day', [$calendar, '2026-03-15']));
         $response->assertSee('היום');
         $response->assertSee('day-hebrew', false);
         $response->assertSee('onPointerDown', false);
@@ -94,7 +95,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee(route('calendars.month', [$calendar, 6, 2026]).'?day=3');
+        $response->assertSee(route('calendars.day', [$calendar, '2026-06-03']));
         $response->assertSee('title="ימי ההולדת של יוני"', false);
 
         Carbon::setTestNow();

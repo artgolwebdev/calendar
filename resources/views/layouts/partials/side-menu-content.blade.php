@@ -1,0 +1,78 @@
+@php
+    $menuLinks = [
+        ['label' => 'לוח שנה חדש', 'route' => 'calendars.create', 'pattern' => 'calendars.create', 'icon' => 'calendar'],
+        ['label' => 'חברי משפחה', 'route' => 'family-members.index', 'pattern' => 'family-members.*', 'icon' => 'users'],
+        ['label' => 'הספרייה שלי', 'route' => 'media.index', 'pattern' => 'media.*', 'icon' => 'photo'],
+        ['label' => 'פרופיל', 'route' => 'profile.edit', 'pattern' => 'profile.*', 'icon' => 'user'],
+    ];
+@endphp
+
+<div class="flex flex-col h-full bg-white">
+    <!-- User chip -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-ink-200">
+        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-ink-900 text-volt font-semibold text-sm shrink-0">
+            {{ strtoupper(Str::substr(Auth::user()->name, 0, 1)) }}
+        </div>
+        <div class="min-w-0">
+            <div class="text-sm font-medium text-ink-900 truncate">{{ Auth::user()->name }}</div>
+            <div class="text-xs text-ink-500 truncate">{{ Auth::user()->email }}</div>
+        </div>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="flex-1 overflow-y-auto py-4">
+        <div class="px-3 space-y-1">
+            @foreach ($menuLinks as $link)
+                @if (Route::has($link['route']))
+                    @php
+                        $isActive = request()->routeIs($link['pattern']);
+                    @endphp
+                    <a href="{{ route($link['route']) }}"
+                       class="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $isActive ? 'bg-ink-100 text-ink-900' : 'text-ink-500 hover:bg-ink-100 hover:text-ink-900' }}">
+                        @if ($isActive)
+                            <span class="absolute inset-y-2 start-0 w-1 rounded-full bg-volt" aria-hidden="true"></span>
+                        @endif
+                        <span class="shrink-0 {{ $isActive ? 'text-ink-900' : 'text-ink-400' }}">
+                            @switch($link['icon'])
+                                @case('calendar')
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    @break
+                                @case('users')
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    @break
+                                @case('photo')
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    @break
+                                @case('user')
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    @break
+                            @endswitch
+                        </span>
+                        <span>{{ $link['label'] }}</span>
+                    </a>
+                @endif
+            @endforeach
+        </div>
+    </nav>
+
+    <!-- Logout -->
+    <div class="p-3 border-t border-ink-200">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:text-danger hover:bg-danger-light transition-colors">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>התנתק</span>
+            </button>
+        </form>
+    </div>
+</div>

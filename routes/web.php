@@ -29,6 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/calendars/{calendar}/month/{monthNumber}/{year?}', [CalendarController::class, 'showMonth'])
         ->name('calendars.month');
 
+    // Calendar day view route
+    Route::get('/calendars/{calendar}/day/{date}', [CalendarController::class, 'showDay'])
+        ->name('calendars.day');
+
     // Calendar event routes (nested under calendars)
     Route::prefix('calendars/{calendar}')->group(function () {
         Route::resource('events', CalendarEventController::class, [

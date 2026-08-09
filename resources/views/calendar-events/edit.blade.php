@@ -30,6 +30,21 @@
                             value="{{ old('event_date', $calendarEvent->event_date->format('Y-m-d')) }}">
                     </div>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="start_time" class="label">שעת התחלה <span class="text-xs text-[#6B6B75] font-normal">(אופציונלי)</span></label>
+                            <input type="time" name="start_time" id="start_time"
+                                class="input"
+                                value="{{ old('start_time', $calendarEvent->start_time) }}">
+                        </div>
+                        <div>
+                            <label for="end_time" class="label">שעת סיום <span class="text-xs text-[#6B6B75] font-normal">(אופציונלי)</span></label>
+                            <input type="time" name="end_time" id="end_time"
+                                class="input"
+                                value="{{ old('end_time', $calendarEvent->end_time) }}">
+                        </div>
+                    </div>
+
                     <div>
                         <label for="event_type" class="label">סוג אירוע</label>
                         <select name="event_type" id="event_type" required class="input">

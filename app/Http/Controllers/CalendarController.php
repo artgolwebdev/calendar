@@ -7,11 +7,13 @@ use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
 use App\Services\CalendarMonthDataService;
+use App\Services\DayViewLayoutService;
 use App\Services\FamilyEventGeneratorService;
 use App\Services\HebrewDateService;
 use App\Services\IsraeliHolidaysService;
 use App\Services\MonthPageStyleService;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -25,16 +27,20 @@ class CalendarController extends Controller
 
     protected CalendarMonthDataService $calendarMonthDataService;
 
+    protected DayViewLayoutService $dayViewLayoutService;
+
     public function __construct(
         HebrewDateService $hebrewDateService,
         MonthPageStyleService $monthPageStyleService,
         FamilyEventGeneratorService $familyEventGeneratorService,
-        CalendarMonthDataService $calendarMonthDataService
+        CalendarMonthDataService $calendarMonthDataService,
+        DayViewLayoutService $dayViewLayoutService
     ) {
         $this->hebrewDateService = $hebrewDateService;
         $this->monthPageStyleService = $monthPageStyleService;
         $this->familyEventGeneratorService = $familyEventGeneratorService;
         $this->calendarMonthDataService = $calendarMonthDataService;
+        $this->dayViewLayoutService = $dayViewLayoutService;
     }
 
     /**
@@ -237,5 +243,114 @@ class CalendarController extends Controller
         $userMedia = Auth::user()->getMedia('user_media');
 
         return view('calendars.month', compact('calendar', 'monthPage', 'events', 'holidays', 'year', 'previousMonth', 'nextMonth', 'userMedia'));
+    }
+
+    /**
+     * Display a single day with events positioned by hour.
+     */
+    public function showDay(Calendar $calendar, string $date)
+    {
+        $this->authorize('view', $calendar);
+
+        try {
+            $currentDate = Carbon::parse($date)->startOfDay();
+        } catch (\Exception $e) {
+            abort(404);
+        }
+
+        $events = $this->calendarMonthDataService->eventsForMonth($calendar, $currentDate->year, $currentDate->month)
+            ->filter(fn (CalendarEvent $event) => $event->display_date->isSameDay($currentDate))
+            ->values();
+
+        $holidays = collect($this->calendarMonthDataService->holidaysForMonth($currentDate->year, $currentDate->month))
+            ->filter(fn (array $holiday) => isset($holiday['date']) && Carbon::parse($holiday['date'])->isSameDay($currentDate))
+            ->values()
+            ->all();
+
+        [$allDayEvents, $positionedEvents] = $this->layoutDayEvents($events);
+
+        $isToday = $currentDate->isSameDay(now());
+        $nowTop = $isToday
+            ? round((now()->hour * 60 + now()->minute) / DayViewLayoutService::DAY_MINUTES * 100, 4)
+            : 0;
+
+        $hebrewDate = $this->hebrewDateService->toHebrewDayMonthString($currentDate);
+        $hebrewYear = $this->hebrewDateService->toHebrewArray($currentDate)['year'];
+
+        $previousDate = $currentDate->copy()->subDay();
+        $nextDate = $currentDate->copy()->addDay();
+
+        return view('calendars.day', compact(
+            'calendar', 'currentDate', 'events', 'holidays', 'allDayEvents',
+            'positionedEvents', 'isToday', 'nowTop', 'hebrewDate', 'hebrewYear',
+            'previousDate', 'nextDate'
+        ));
+    }
+
+    /**
+     * Split the day's events into all-day events and positioned timed events.
+     *
+     * @param  Collection<int, CalendarEvent>  $events
+     * @return array{0: array<int, CalendarEvent>, 1: array<int, array<string, mixed>>}
+     */
+    protected function layoutDayEvents($events): array
+    {
+        $allDayEvents = [];
+        $timed = [];
+
+        foreach ($events as $event) {
+            $start = $this->timeToMinutes($event->start_time);
+
+            if ($start === null) {
+                $allDayEvents[] = $event;
+
+                continue;
+            }
+
+            $timed[] = [
+                'start' => $start,
+                'end' => $this->timeToMinutes($event->end_time) ?? min($start + 60, DayViewLayoutService::DAY_MINUTES),
+                'event' => $event,
+            ];
+        }
+
+        $positionedEvents = array_map(function (array $item): array {
+            $event = $item['event'];
+
+            return [
+                'event' => $event,
+                'title' => $event->display_title ?? $event->title,
+                'start_label' => $this->minutesToTime((int) $item['start']),
+                'end_label' => $this->minutesToTime((int) $item['end']),
+                'top' => $item['top'],
+                'height' => $item['height'],
+                'left' => $item['left'],
+                'width' => $item['width'],
+            ];
+        }, $this->dayViewLayoutService->layout($timed));
+
+        return [$allDayEvents, $positionedEvents];
+    }
+
+    /**
+     * Convert an "H:i" time string to minutes since midnight.
+     */
+    protected function timeToMinutes(?string $time): ?int
+    {
+        if ($time === null || $time === '') {
+            return null;
+        }
+
+        [$hours, $minutes] = array_map('intval', explode(':', $time));
+
+        return $hours * 60 + $minutes;
+    }
+
+    /**
+     * Convert minutes since midnight to an "H:i" time string.
+     */
+    protected function minutesToTime(int $minutes): string
+    {
+        return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
     }
 }

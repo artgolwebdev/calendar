@@ -26,6 +26,8 @@ class StoreCalendarEventRequest extends FormRequest
             'title' => 'required|string|max:255',
             'event_date' => 'required|date',
             'event_type' => 'required|in:birthday,anniversary,custom',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
             'family_member_id' => 'nullable|exists:family_members,id',
         ];
     }
