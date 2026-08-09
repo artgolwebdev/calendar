@@ -1,7 +1,7 @@
 <div x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false" class="bg-white">
     <!-- Top Navbar -->
     <nav class="sticky top-0 z-50 bg-white border-b border-ink-200">
-        <div class="flex items-center justify-between h-16 px-4 lg:px-6 lg:ps-72">
+        <div class="flex items-center justify-between h-16 px-4 lg:px-6 side-pad">
             <div class="flex items-center gap-2 sm:gap-6 min-w-0">
                 <!-- Brand -->
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0">
@@ -31,7 +31,7 @@
     </nav>
 
     <!-- Desktop Permanent Side Panel -->
-    <aside class="hidden lg:block lg:fixed lg:inset-y-0 lg:right-0 lg:w-72 lg:bg-white lg:border-s lg:border-ink-200 lg:z-40">
+    <aside class="hidden lg:block lg:fixed lg:inset-y-0 lg:right-0 lg:bg-white lg:border-s lg:border-ink-200 lg:z-40 side-aside">
         <div class="h-full pt-20">
             @include('layouts.partials.side-menu-content')
         </div>

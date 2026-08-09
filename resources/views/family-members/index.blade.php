@@ -1,72 +1,83 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-semibold text-[#1A1A1E]">חברי משפחה</h1>
-                <p class="text-xs text-[#6B6B75] mt-1">ניהול פרטי חברי המשפחה, ימי הולדת ותאריכי נישואין</p>
-            </div>
-            <a href="{{ route('family-members.create') }}" class="btn btn-primary">
-                + הוסף חבר משפחה
-            </a>
-        </div>
-    </x-slot>
-
     <div class="py-8">
         <div class="container">
             @if (session('success'))
-                <div class="mb-6 p-4 rounded-lg bg-[#F0FDF4] border border-[#DCFCE7] text-[#15803D] text-sm font-medium flex items-center justify-between">
-                    <span>{{ session('success') }}</span>
+                <div class="mb-4 p-4 rounded-xl bg-volt/15 border border-volt text-ink-900 text-sm font-semibold">
+                    {{ session('success') }}
                 </div>
             @endif
 
+            {{-- Header: title + CTA --}}
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-ink-950 tracking-tight">חברי משפחה</h1>
+                    <p class="mt-1 text-sm text-ink-500">ניהול פרטי חברי המשפחה, ימי הולדת, תאריכי נישואין והתמונות שלהם</p>
+                </div>
+                <a href="{{ route('family-members.create') }}"
+                    class="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-ink-900 text-volt font-bold text-sm transition-colors hover:bg-ink-800 active:bg-ink-950">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14m-7-7h14" />
+                    </svg>
+                    הוסף חבר משפחה
+                </a>
+            </div>
+
             <div class="card overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-[#E5E5E8]">
-                        <thead class="bg-[#F7F7F8]">
+                    <table class="min-w-full divide-y divide-ink-200">
+                        <thead class="bg-ink-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-[#6B6B75] uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-ink-500 uppercase tracking-wider">
                                     שם
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-[#6B6B75] uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-ink-500 uppercase tracking-wider">
                                     תאריך לידה
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-[#6B6B75] uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-ink-500 uppercase tracking-wider">
                                     תאריך נישואין
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-[#6B6B75] uppercase tracking-wider">
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-ink-500 uppercase tracking-wider">
                                     פעולות
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-[#E5E5E8]">
+                        <tbody class="bg-white divide-y divide-ink-200">
                             @forelse ($familyMembers as $familyMember)
-                                <tr class="hover:bg-[#F7F7F8]/80 transition-colors">
+                                <tr class="hover:bg-ink-50/80 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <a href="{{ route('family-members.show', $familyMember) }}" class="text-sm font-semibold text-[#1A1A1E] hover:text-[#4F46E5] transition-colors">
-                                            {{ $familyMember->name }}
-                                        </a>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ route('family-members.show', $familyMember) }}" class="text-sm font-semibold text-ink-900 hover:text-ink-950 hover:underline transition-colors">
+                                                {{ $familyMember->name }}
+                                            </a>
+                                            <span class="chip bg-ink-100 text-ink-500" data-media-count="{{ $familyMember->folder?->media_count ?? 0 }}">
+                                                <svg class="w-3 h-3 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                {{ $familyMember->folder?->media_count ?? 0 }}
+                                            </span>
+                                        </div>
                                         @if ($familyMember->notes)
-                                            <div class="text-xs text-[#6B6B75] mt-0.5">{{ Str::limit($familyMember->notes, 50) }}</div>
+                                            <div class="text-xs text-ink-500 mt-0.5">{{ Str::limit($familyMember->notes, 50) }}</div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-[#1A1A1E] font-medium">{{ $familyMember->birth_date->format('d/m/Y') }}</div>
+                                        <div class="text-sm text-ink-900 font-medium">{{ $familyMember->birth_date->format('d/m/Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-[#1A1A1E]">
+                                        <div class="text-sm text-ink-900">
                                             {{ $familyMember->anniversary_date ? $familyMember->anniversary_date->format('d/m/Y') : '—' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <div class="flex items-center gap-3">
-                                            <a href="{{ route('family-members.edit', $familyMember) }}" class="text-xs font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors">
+                                            <a href="{{ route('family-members.edit', $familyMember) }}" class="text-xs font-medium text-ink-900 hover:text-ink-950 hover:underline transition-colors">
                                                 ערוך
                                             </a>
-                                            <span class="text-[#E5E5E8]">|</span>
+                                            <span class="text-ink-200">|</span>
                                             <form action="{{ route('family-members.destroy', $familyMember) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-xs font-medium text-[#DC2626] hover:text-[#B91C1C] transition-colors"
+                                                <button type="submit" class="text-xs font-medium text-danger hover:text-danger-hover transition-colors"
                                                     onclick="return confirm('האם אתה בטוח שברצונך למחוק את חבר המשפחה?')">
                                                     מחק
                                                 </button>
@@ -77,9 +88,10 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center">
-                                        <p class="text-sm text-[#6B6B75] mb-4">עדיין לא הוספת חברי משפחה</p>
-                                        <a href="{{ route('family-members.create') }}" class="btn btn-primary btn-sm inline-flex">
-                                            + הוסף חבר משפחה
+                                        <p class="text-sm text-ink-500 mb-4">עדיין לא הוספת חברי משפחה</p>
+                                        <a href="{{ route('family-members.create') }}"
+                                            class="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-ink-900 text-volt font-bold text-sm transition-colors hover:bg-ink-800 active:bg-ink-950">
+                                            הוסף חבר משפחה
                                         </a>
                                     </td>
                                 </tr>

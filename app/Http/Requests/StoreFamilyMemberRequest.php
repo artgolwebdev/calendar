@@ -27,6 +27,8 @@ class StoreFamilyMemberRequest extends FormRequest
             'birth_date' => 'required|date',
             'anniversary_date' => 'nullable|date',
             'notes' => 'nullable|string',
+            'images' => ['nullable', 'array', 'max:20'],
+            'images.*' => ['image', 'mimes:jpeg,png,webp,gif,avif', 'max:10240'],
         ];
     }
 }

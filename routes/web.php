@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
 
     // Media library routes
     Route::get('/media', [MediaController::class, 'index'])->name('media.index');
+    Route::get('/media/upload', [MediaController::class, 'create'])->name('media.create');
     Route::post('/media', [MediaController::class, 'store'])->name('media.store');
     Route::put('/media/{media}', [MediaController::class, 'update'])->name('media.update');
     Route::put('/media/{media}/folder', [MediaController::class, 'moveToFolder'])->name('media.move');

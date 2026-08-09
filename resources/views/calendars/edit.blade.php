@@ -23,17 +23,7 @@
                             value="{{ old('name', $calendar->name) }}">
                     </div>
 
-                    <div>
-                        <label for="cover_image_path" class="label">תמונת כריכה <span class="text-xs text-[#6B6B75] font-normal">(אופציונלי)</span></label>
-                        <input type="file" name="cover_image_path" id="cover_image_path" class="input pt-1.5 cursor-pointer" accept="image/*">
-                        @if ($calendar->cover_image_path)
-                            <div class="mt-3 p-3 bg-[#F7F7F8] border border-[#E5E5E8] rounded-lg flex items-center gap-3">
-                                <img src="{{ asset('storage/' . $calendar->cover_image_path) }}" alt="תמונה נוכחית" class="h-16 w-24 object-cover rounded-md border border-[#E5E5E8]">
-                                <p class="text-xs text-[#6B6B75]">העלאת תמונה חדשה תחליף את התמונה הנוכחית</p>
-                            </div>
-                        @endif
-                        <p class="text-xs text-[#6B6B75] mt-1">גודל מקסימלי: 50MB</p>
-                    </div>
+                    <x-cover-upload :existing="$calendar->cover_image_path ? asset('storage/' . $calendar->cover_image_path) : null" />
 
                     <div class="flex items-start gap-3 p-4 bg-[#F7F7F8] border border-[#E5E5E8] rounded-lg">
                         <input type="hidden" name="is_main" value="0">

@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Cropper.js theme overrides */
+.cropper-view-box.cropper-view-box {
+    outline: 2px solid #CCFF00;
+    outline-color: rgba(204, 255, 0, 0.9);
+}
+
+.cropper-modal.cropper-modal {
+    background-color: rgba(12, 12, 14, 0.75);
+}
+
+.cropper-line.cropper-line,
+.cropper-point.cropper-point {
+    background-color: #CCFF00;
+}

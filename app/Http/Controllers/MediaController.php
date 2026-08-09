@@ -41,6 +41,18 @@ class MediaController extends Controller
     }
 
     /**
+     * Display the dedicated media upload view.
+     */
+    public function create(Request $request): View
+    {
+        $user = Auth::user();
+
+        $folders = $user->folders()->withCount('media')->get();
+
+        return view('media.upload', compact('folders'));
+    }
+
+    /**
      * Store uploaded files in the authenticated user's media library.
      */
     public function store(StoreMediaRequest $request): RedirectResponse|JsonResponse

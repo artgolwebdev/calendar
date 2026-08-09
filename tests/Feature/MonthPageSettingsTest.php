@@ -209,7 +209,7 @@ class MonthPageSettingsTest extends TestCase
         $this->assertLessThan($fontPos, $weekdayPos, 'Weekday color control should appear above the font selector');
     }
 
-    public function test_save_settings_button_is_hidden_fixed_bottom_cta(): void
+    public function test_save_settings_button_lives_in_offcanvas_footer_and_is_hidden_by_default(): void
     {
         $monthPage = $this->createMonthPage();
         $user = $monthPage->calendar->user;
@@ -219,9 +219,18 @@ class MonthPageSettingsTest extends TestCase
         );
 
         $response->assertOk();
-        $response->assertSee('id="saveSettingsCta"', false);
-        $response->assertSee('form="designSettingsForm"', false);
-        $response->assertSee('hidden fixed inset-x-0 bottom-0');
+
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('id="saveSettingsCta"', $html);
+        $this->assertStringContainsString('form="designSettingsForm"', $html);
+        $this->assertStringContainsString('rounded-t-3xl', $html);
+        $this->assertStringContainsString('max-h-[40vh]', $html);
+        $this->assertStringContainsString('שמור הגדרות', $html);
+
+        preg_match('/<button[^>]*id="saveSettingsCta"[^>]*>/', $html, $matches);
+        $this->assertNotEmpty($matches, 'Save button tag not found');
+        $this->assertStringContainsString('hidden', $matches[0], 'Save button should be hidden by default');
     }
 
     public function test_remove_image_form_is_not_nested_inside_update_form(): void
@@ -314,7 +323,7 @@ class MonthPageSettingsTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_design_settings_are_in_a_collapsed_accordion(): void
+    public function test_design_settings_are_in_a_responsive_offcanvas_closed_by_default(): void
     {
         $monthPage = $this->createMonthPage();
         $user = $monthPage->calendar->user;
@@ -326,10 +335,17 @@ class MonthPageSettingsTest extends TestCase
         $response->assertOk();
 
         $html = $response->getContent();
-        $this->assertStringContainsString('<details', $html);
+        $this->assertStringContainsString('x-show="settingsOpen"', $html);
+        $this->assertStringContainsString('rounded-t-3xl', $html);
+        $this->assertStringContainsString('max-h-[40vh]', $html);
+        $this->assertStringContainsString('lg:rounded-l-3xl', $html);
+        $this->assertStringContainsString('lg:h-full', $html);
+        $this->assertStringContainsString('lg:right-0', $html);
+        $this->assertStringContainsString('lg:w-[26rem]', $html);
+        $this->assertStringContainsString('lg:hidden', $html);
         $this->assertStringContainsString('הגדרות עיצוב', $html);
-        $this->assertDoesNotMatchRegularExpression('/<details[^>]*\sopen\s/', $html, 'Accordion should be collapsed by default');
         $this->assertStringContainsString('id="designSettingsForm"', $html);
+        $this->assertStringContainsString('settingsOpen: false', $html, 'Offcanvas should be closed by default');
     }
 
     public function test_month_view_cover_shows_month_and_year_on_blackish_badge(): void

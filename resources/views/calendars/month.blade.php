@@ -1,28 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('calendars.show', $calendar) }}" class="btn btn-secondary btn-sm">
-                    → חזור ללוח
-                </a>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('calendars.month', [$calendar, $previousMonth->month, $previousMonth->year]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="חודש קודם">
-                    → חודש קודם
-                </a>
-                <a href="{{ route('calendars.month', [$calendar, now()->month, now()->year]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="היום">
-                    היום
-                </a>
-                <a href="{{ route('calendars.month', [$calendar, $nextMonth->month, $nextMonth->year]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="חודש הבא">
-                    חודש הבא ←
-                </a>
-            </div>
-        </div>
-    </x-slot>
-
     @php
         $styleService = app(\App\Services\MonthPageStyleService::class);
         $styles = $styleService->resolve($monthPage);
@@ -41,7 +17,8 @@
         )['year'];
     @endphp
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ settingsOpen: {{ $errors->any() ? 'true' : 'false' }} }"
+        @keydown.escape.window="settingsOpen = false">
         <div class="container">
             @if (session('success'))
                 <div class="mb-4 card p-4" style="background-color: #F0FFF4; border-color: #C6F6D5;">
@@ -59,38 +36,73 @@
                 </div>
             @endif
 
-            @if ($calendar->cover_image_path)
-                <div class="rounded-xl overflow-hidden mb-6 relative"
-                    style="height: 140px; background-image: url('{{ asset('storage/' . $calendar->cover_image_path) }}'); background-size: cover; background-position: center;">
-                    <div class="absolute inset-0 bg-black/40"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="text-center">
-                            <p class="text-white text-2xl font-bold px-4 py-1.5 bg-black/50 rounded-lg">
-                                {{ $monthNames[$monthPage->month_number] }} {{ $year }}
-                            </p>
-                            <p class="text-white/90 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
-                        </div>
-                    </div>
-                </div>
-            @else
-                <div class="rounded-xl overflow-hidden mb-6 relative bg-gradient-to-r from-[#4F46E5] to-[#6366F1]"
-                    style="height: 140px;">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="text-center">
-                            <p class="text-white text-2xl font-bold px-4 py-1.5 bg-white/15 rounded-lg">
-                                {{ $monthNames[$monthPage->month_number] }} {{ $year }}
-                            </p>
-                            <p class="text-indigo-100 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
+            {{-- Back to calendar --}}
+            <a href="{{ route('calendars.show', $calendar) }}"
+                class="inline-flex items-center gap-1.5 mb-4 text-sm font-semibold text-ink-500 hover:text-ink-900 transition-colors">
+                → חזור ללוח
+            </a>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                <!-- Calendar Grid -->
-                <div class="lg:col-span-3">
-                    <div id="calendarGrid" dir="ltr" class="card p-3 sm:p-6 relative overflow-hidden"
-                        style="font-family: {{ $styles['fontFamily'] }}; {{ $styles['gridBackground'] }} min-height: 600px;">
+            {{-- Prev / Today / Next navigation --}}
+            <div class="grid grid-cols-3 gap-2 mb-6">
+                <a href="{{ route('calendars.month', [$calendar, $previousMonth->month, $previousMonth->year]) }}"
+                    class="flex items-center justify-center gap-1 h-12 rounded-xl bg-white border border-ink-200 font-bold text-ink-900 transition-colors hover:bg-ink-100 active:bg-ink-200"
+                    aria-label="חודש קודם">
+                    → חודש קודם
+                </a>
+                <a href="{{ route('calendars.month', [$calendar, now()->month, now()->year]) }}"
+                    class="flex items-center justify-center gap-1 h-12 rounded-xl bg-ink-900 text-volt font-bold transition-colors hover:bg-ink-800 active:bg-ink-950"
+                    aria-label="היום">
+                    היום
+                </a>
+                <a href="{{ route('calendars.month', [$calendar, $nextMonth->month, $nextMonth->year]) }}"
+                    class="flex items-center justify-center gap-1 h-12 rounded-xl bg-white border border-ink-200 font-bold text-ink-900 transition-colors hover:bg-ink-100 active:bg-ink-200"
+                    aria-label="חודש הבא">
+                    חודש הבא ←
+                </a>
+            </div>
+
+            <div class="relative mb-6">
+                @if ($calendar->cover_image_path)
+                    <div class="rounded-xl overflow-hidden relative"
+                        style="height: 140px; background-image: url('{{ asset('storage/' . $calendar->cover_image_path) }}'); background-size: cover; background-position: center;">
+                        <div class="absolute inset-0 bg-black/40"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <p class="text-white text-2xl font-bold px-4 py-1.5 bg-black/50 rounded-lg">
+                                    {{ $monthNames[$monthPage->month_number] }} {{ $year }}
+                                </p>
+                                <p class="text-white/90 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="rounded-xl overflow-hidden relative bg-gradient-to-r from-[#4F46E5] to-[#6366F1]"
+                        style="height: 140px;">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <p class="text-white text-2xl font-bold px-4 py-1.5 bg-white/15 rounded-lg">
+                                    {{ $monthNames[$monthPage->month_number] }} {{ $year }}
+                                </p>
+                                <p class="text-indigo-100 text-sm mt-1.5">· {{ $hebrewMonthName }} {{ $hebrewYear }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Design settings toggle --}}
+                <button type="button" @click="settingsOpen = !settingsOpen"
+                    :class="settingsOpen ? 'bg-volt text-ink-950' : 'bg-ink-950/60 text-white hover:bg-ink-950/80'"
+                    class="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors backdrop-blur-sm"
+                    aria-label="הגדרות עיצוב" aria-expanded="false" :aria-expanded="settingsOpen ? 'true' : 'false'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="calendarGrid" dir="ltr" class="card p-3 sm:p-6 relative overflow-hidden"
+                style="font-family: {{ $styles['fontFamily'] }}; {{ $styles['gridBackground'] }} min-height: 600px;">
                         <div id="gridOverlay" class="absolute inset-0 rounded-lg pointer-events-none"
                             style="{{ $styles['overlay'] }}"></div>
 
@@ -241,11 +253,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Customization Panel -->
+                <!-- Design Settings Offcanvas -->
                 @include('calendars.partials.month-design-settings')
-            </div>
         </div>
     </div>
 

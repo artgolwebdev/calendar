@@ -270,13 +270,62 @@
             [x-cloak] {
                 display: none;
             }
+
+            /* Collapsible desktop sidebar */
+            .side-active-dot {
+                display: none;
+            }
+
+            .sidebar-ready .side-pad {
+                transition: padding 300ms ease-in-out;
+            }
+
+            .sidebar-ready .side-aside {
+                transition: width 300ms ease-in-out;
+            }
+
+            @media (min-width: 1024px) {
+                .side-pad.side-pad {
+                    padding-inline-start: 18rem;
+                }
+
+                .side-aside {
+                    width: 18rem;
+                }
+
+                .app-sidebar-collapsed .side-pad {
+                    padding-inline-start: 5rem;
+                }
+
+                .app-sidebar-collapsed .side-aside {
+                    width: 5rem;
+                }
+
+                .app-sidebar-collapsed .side-label,
+                .app-sidebar-collapsed .side-user-text,
+                .app-sidebar-collapsed .side-chevron,
+                .app-sidebar-collapsed .side-submenu,
+                .app-sidebar-collapsed .side-active-bar {
+                    display: none;
+                }
+
+                .app-sidebar-collapsed .side-item,
+                .app-sidebar-collapsed .side-user {
+                    justify-content: center;
+                }
+
+                .app-sidebar-collapsed .side-active-dot {
+                    display: flex;
+                }
+            }
         </style>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen">
+        <div class="min-h-screen" x-data="{ ready: false }" x-init="requestAnimationFrame(() => ready = true)"
+             :class="(ready ? 'sidebar-ready ' : '') + ($store.sidebar.collapsed ? 'app-sidebar-collapsed' : '')">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
@@ -289,7 +338,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main class="lg:ps-72">
+            <main class="side-pad">
                 {{ $slot }}
             </main>
         </div>

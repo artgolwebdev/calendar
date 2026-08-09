@@ -36,6 +36,7 @@ class MediaLibraryTest extends TestCase
     {
         $this->get('/media')->assertRedirect('/login');
         $this->post('/media')->assertRedirect('/login');
+        $this->get('/media/upload')->assertRedirect('/login');
     }
 
     public function test_user_can_view_empty_media_library(): void
@@ -298,5 +299,39 @@ class MediaLibraryTest extends TestCase
         $response->assertSee('התמונות שלי (2)');
         $response->assertSee($media[0]->getUrl('thumb'));
         $response->assertSee($media[1]->getUrl('thumb'));
+    }
+
+    public function test_upload_view_renders_dropzone_and_folder_selector(): void
+    {
+        $user = User::factory()->create();
+        $user->folders()->create(['name' => 'חופשה']);
+
+        $response = $this->actingAs($user)->get('/media/upload');
+
+        $response->assertOk();
+        $response->assertSee('העלאת תמונות');
+        $response->assertSee('בחירת קבצים');
+        $response->assertSee('חופשה');
+        $response->assertSee(route('media.index'));
+    }
+
+    public function test_library_view_links_to_upload_view(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/media');
+
+        $response->assertOk();
+        $response->assertSee(route('media.create'));
+    }
+
+    public function test_upload_view_links_back_to_library(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/media/upload');
+
+        $response->assertOk();
+        $response->assertSee(route('media.index'));
     }
 }

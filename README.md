@@ -11,6 +11,7 @@
 ## Features
 
 - **Multiple calendars** per user, each with its own cover image
+- **Cover image cropping** — selecting a cover opens a Cropper.js editor that locks the crop to a 21:9 ratio (zoom in/out, reset, drag to reframe) and stages a preview before the cropped JPEG is uploaded; the shared `<x-cover-upload>` component powers both the create and edit forms, and edit lets you replace the current cover or keep it untouched
 - **Main calendar** — users can mark one calendar as their main one (falling back to the oldest); it powers the dashboard day scroller
 - **Dashboard day scroller** — a 14-day RTL horizontal strip for the main calendar with prev/next arrow buttons, click-and-drag scrolling, and automatic smooth centering on today on load
 - **Yearly overview** — month tiles with background images and chips for events and Jewish holidays
@@ -37,6 +38,7 @@
 - PHPUnit
 - [Resend](https://resend.com) for transactional email (`resend/resend-laravel`)
 - [Spatie Media Library](https://spatie.be/docs/laravel-medialibrary) (`spatie/laravel-medialibrary`) for the user media library
+- [Cropper.js](https://fengyuanchen.github.io/cropperjs/) (`cropperjs`) for the calendar cover crop editor
 - [Hebcal API](https://www.hebcal.com/home/developer-apis) for Jewish holidays
 
 ## Requirements
@@ -104,6 +106,8 @@ vendor/bin/pint --dirty
 
 - **Media folders** — the library is organized into folders (`Folder` model, unique `user_id`+`name`, owned via `FolderPolicy`). The index page shows a sidebar with "All media" plus every folder; images are moved either by drag-and-drop onto a folder or from a per-image dropdown. Deleting a folder never deletes its media — the `folder_id` foreign key is `nullOnDelete`, so items simply return to All Media. Every family member gets an auto-synced folder: `FamilyMemberObserver` creates it on member creation, keeps its name in sync on updates (member-linked folders can't be renamed/deleted manually), and removes it when the member is deleted. `php artisan folders:backfill` creates folders for any members that predate the feature.
 
+- **Cover image cropping** — `resources/views/components/cover-upload.blade.php` (backed by the `coverCrop` Alpine component in `resources/js/app.js`) wraps the `cover_image_path` file input. Selecting an image (via the picker or drag-and-drop) opens a Cropper.js modal locked to `21/9` with `viewMode: 1`, `dragMode: 'move'`, and wheel/button zoom. On confirm, `getCroppedCanvas({ maxWidth: 1920, fillColor: '#FFFFFF', imageSmoothingQuality: 'high' })` exports a JPEG blob (quality 0.9) that replaces the input's file list through `DataTransfer`, so the normal multipart submit uploads the already-cropped image — no backend changes, and if JS fails the raw file still uploads. Cancel restores the previous staged file or clears the input; edit shows the current cover until replaced. The single stored file is referenced directly by the calendar show banner, the month-view banner, and the dashboard card, so no per-month copies are needed.
+
 ## Project Structure
 
 ```
@@ -129,6 +133,7 @@ resources/views/
 ├── auth/                  Login, register, forgot/reset password (Hebrew RTL)
 ├── calendars/              Yearly, monthly and single-day views, design settings partial
 ├── calendar-events/        Event create/edit (with start/end time)
+├── components/             cover-upload.blade.php (21:9 crop editor for calendar covers)
 ├── components/dashboard/   Dashboard day-scroller (RTL strip, arrows, drag, auto-scroll)
 ├── emails/                 Shared RTL-safe layout (layouts/transactional.blade.php), welcome.blade.php, password-reset.blade.php
 ├── family-members/         Member CRUD

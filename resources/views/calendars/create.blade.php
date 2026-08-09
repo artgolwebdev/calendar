@@ -22,11 +22,7 @@
                             value="{{ old('name') }}">
                     </div>
 
-                    <div>
-                        <label for="cover_image_path" class="label">תמונת כריכה <span class="text-xs text-[#6B6B75] font-normal">(אופציונלי)</span></label>
-                        <input type="file" name="cover_image_path" id="cover_image_path" class="input pt-1.5 cursor-pointer" accept="image/*">
-                        <p class="text-xs text-[#6B6B75] mt-1">פורמטים נתמכים: JPG, PNG, WEBP (עד 50MB)</p>
-                    </div>
+                    <x-cover-upload />
 
                     @if ($errors->any())
                         <div class="p-4 rounded-lg bg-[#FEF2F2] border border-[#FCA5A5] text-sm text-[#DC2626]">

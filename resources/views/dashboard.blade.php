@@ -37,17 +37,13 @@
                             </p>
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('calendars.show', $calendar) }}"
-                                    class="btn btn-secondary flex-1 text-center justify-center">
+                                    class="btn btn-primary flex-1 text-center justify-center">
                                     צפה בלוח
                                 </a>
-                                <form action="{{ route('calendars.destroy', $calendar) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-destructive"
-                                        onclick="return confirm('האם אתה בטוח שברצונך למחוק את לוח השנה?')">
-                                        מחק
-                                    </button>
-                                </form>
+                                <a href="{{ route('calendars.edit', $calendar) }}"
+                                    class="btn btn-secondary flex-1 text-center justify-center">
+                                    ערוך לוח
+                                </a>
                             </div>
                         </div>
                     </div>

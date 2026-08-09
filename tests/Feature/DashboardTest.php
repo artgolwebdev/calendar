@@ -52,6 +52,19 @@ class DashboardTest extends TestCase
         $response->assertDontSee('+ צור לוח שנה חדש');
     }
 
+    public function test_dashboard_calendar_card_links_to_edit_instead_of_delete(): void
+    {
+        $user = User::factory()->create();
+        $calendar = $user->calendars()->create(['name' => 'לוח משפחתי']);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['צפה בלוח', 'ערוך לוח']);
+        $response->assertSee(route('calendars.edit', $calendar));
+        $response->assertDontSee('value="DELETE"', false);
+    }
+
     public function test_dashboard_renders_two_week_day_scroller_for_main_calendar(): void
     {
         Http::fake(['https://www.hebcal.com/*' => Http::response(['items' => []])]);
