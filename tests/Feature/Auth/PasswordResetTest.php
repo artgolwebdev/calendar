@@ -68,6 +68,8 @@ class PasswordResetTest extends TestCase
             $html = $mail->render();
 
             $this->assertStringContainsString('lang="he" dir="rtl"', $html);
+            $this->assertStringContainsString('<body dir="rtl"', $html);
+            $this->assertStringContainsString('direction:rtl;text-align:right;', $html);
             $this->assertStringContainsString('איפוס סיסמה', $html);
             $this->assertStringContainsString(config('app.name'), $html);
             $this->assertStringContainsString($user->name, $html);

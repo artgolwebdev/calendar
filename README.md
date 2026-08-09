@@ -21,7 +21,7 @@
 - **Media folders** — organize library images into folders via drag-and-drop or a per-image dropdown; every family member gets an auto-synced folder, and deleting a folder never deletes its media
 - **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars — regardless of whether the member or the calendar was created first — labeled with the member’s age or years married
 - **Calendar events** — birthdays, anniversaries, and custom events, with optional start/end times that place events on the day view
-- **Password reset** — Hebrew RTL “forgot/reset password” pages with Hebrew validation messages and a branded Hebrew reset email sent via Resend
+- **Transactional emails** — a welcome email and a branded password-reset email, both in Hebrew RTL and both built on one shared, RTL-safe layout (`resources/views/emails/layouts/transactional.blade.php`), sent via Resend. The welcome email fires on the `Registered` event after sign-up (dispatched through the queue, so it sends immediately when `QUEUE_CONNECTION=sync`); the reset email is sent synchronously by the password-reset notification
 - **Jewish holidays** — fetched from the Hebcal API and grouped per month
 - **Hebrew date conversion** — built-in service with leap-year support (אדר א׳ / אדר ב׳)
 - **Side navigation** — a stripped top navbar (brand + “Dashboard”) with the remaining links (New Calendar, Family Members, Media, Profile, Log out) in a permanent side panel on desktop (`lg:`) and a blurred slide-in offcanvas menu on mobile/tablet (close via backdrop click, Escape, or navigating)
@@ -90,6 +90,10 @@ vendor/bin/pint --dirty
 
 - **Jewish holidays** — `IsraeliHolidaysService` queries the Hebcal API per year (cached) and the calendar views filter for major holidays.
 
+- **Transactional emails** — every email sets RTL explicitly and inline so clients like Gmail, Outlook, and Apple Mail render it right-to-left: `dir="rtl"` on the outer `<html>` and `<body>`, `direction:rtl; text-align:right;` on every block-level element (not just inherited), centered CTA buttons, and `dir="ltr"` + `unicode-bidi:isolate` spans so URLs and email addresses read correctly inside Hebrew sentences. Email clients ignore most `<style>` blocks and custom web fonts, so there is no Tailwind or `@font-face` in the mail views — all styling is inline and the font stack falls back to `'Segoe UI', Tahoma, Arial, sans-serif` for Hebrew-legible rendering. New transactional emails should `@extends('emails.layouts.transactional')` rather than build their own markup.
+
+- **Welcome email** — `RegisteredUserController` fires Laravel's `Registered` event; the auto-discovered `SendWelcomeEmail` listener sends the queued `WelcomeEmail` mailable (`QUEUE_CONNECTION=database` needs a queue worker, `QUEUE_CONNECTION=sync` sends it inline). It personalizes the greeting with the user's name and links to the dashboard.
+
 - **Password reset** — Breeze routes/controllers dispatch a `ResetPasswordNotification` that sends a branded Hebrew RTL email (`PasswordResetMail`) through the Resend mailer (`MAIL_MAILER=resend`, API key in `RESEND_KEY`). The email is personalized with the recipient’s name and uses bidi-isolated spans so mixed Hebrew/English renders correctly. UI labels, inline validation errors, and broker status messages are translated via `lang/he`. After a successful reset the user is redirected to the login page.
 
 - **Day view** — `CalendarController::showDay` resolves the requested date (aborting 404 on invalid input), reuses `CalendarMonthDataService` to fetch the day's events and holidays, then splits events into all-day (no `start_time`) and timed ones. `DayViewLayoutService` clamps times to the day, enforces a 30-minute minimum duration, groups transitively-overlapping events into clusters, and assigns side-by-side columns via first-free-column placement — returning `top/height/left/width` as percentages of the 1440-minute day for the view's absolute-positioned blocks. The current-time line renders only when viewing today and updates every 60 seconds via a small Alpine/JS interval.
@@ -105,9 +109,10 @@ vendor/bin/pint --dirty
 ```
 app/
 ├── Http/Controllers/       Auth, Calendar, CalendarEvent, Dashboard, FamilyMember, Media, Folder, MonthPage
-├── Mail/                   PasswordResetMail (branded Hebrew RTL email)
+├── Mail/                   PasswordResetMail, WelcomeEmail (branded Hebrew RTL emails)
 ├── Models/                 Calendar, CalendarEvent, FamilyMember, Folder, Media, MonthPage, User
 ├── Notifications/          ResetPasswordNotification
+├── Listeners/              SendWelcomeEmail (sends the welcome email on the Registered event)
 ├── Observers/              CalendarObserver, FamilyMemberObserver
 ├── Requests/               Form requests with validation
 ├── Policies/               FamilyMember, Calendar, Media, Folder
@@ -125,7 +130,7 @@ resources/views/
 ├── calendars/              Yearly, monthly and single-day views, design settings partial
 ├── calendar-events/        Event create/edit (with start/end time)
 ├── components/dashboard/   Dashboard day-scroller (RTL strip, arrows, drag, auto-scroll)
-├── emails/                 password-reset.blade.php (RTL inline-styled)
+├── emails/                 Shared RTL-safe layout (layouts/transactional.blade.php), welcome.blade.php, password-reset.blade.php
 ├── family-members/         Member CRUD
 ├── layouts/                App layout, navigation (navbar + side panel), side-menu partial
 ├── media/                  Media library index (sidebar with folders, bulk upload, rename/delete/move)
