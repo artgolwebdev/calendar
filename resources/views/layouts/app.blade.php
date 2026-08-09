@@ -330,7 +330,7 @@
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white border-b border-[var(--color-border)]">
+                <header class="bg-white border-b border-[var(--color-border)] side-pad">
                     <div class="container py-6">
                         {{ $header }}
                     </div>

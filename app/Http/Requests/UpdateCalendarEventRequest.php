@@ -24,11 +24,13 @@ class UpdateCalendarEventRequest extends FormRequest
     {
         return [
             'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'event_date' => 'sometimes|required|date',
-            'event_type' => 'sometimes|required|in:birthday,anniversary,custom',
+            'event_type' => 'sometimes|required|in:custom',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after:start_time',
             'family_member_id' => 'nullable|exists:family_members,id',
+            'cover_image_path' => 'nullable|image|max:51200',
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CalendarEventController;
+use App\Http\Controllers\CalendarThemeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyMemberController;
 use App\Http\Controllers\FolderController;
@@ -37,7 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('calendars/{calendar}')->group(function () {
         Route::resource('events', CalendarEventController::class, [
             'names' => 'calendar-events',
-            'except' => ['index'],
+            'parameters' => ['events' => 'calendarEvent'],
         ]);
     });
 
@@ -62,6 +63,10 @@ Route::middleware('auth')->group(function () {
         ->name('month-pages.update');
     Route::delete('/calendars/{calendar}/month-pages/{monthPage}', [MonthPageController::class, 'removeImage'])
         ->name('month-pages.remove-image');
+
+    // Global calendar theme routes
+    Route::post('/calendars/{calendar}/themes/apply', [CalendarThemeController::class, 'apply'])
+        ->name('calendars.themes.apply');
 });
 
 require __DIR__.'/auth.php';

@@ -6,17 +6,23 @@ use App\Http\Requests\StoreCalendarEventRequest;
 use App\Http\Requests\UpdateCalendarEventRequest;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
-use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class CalendarEventController extends Controller
 {
     /**
-     * Display a listing of events for a specific calendar
+     * Display a listing of events for a specific calendar.
      */
     public function index(Calendar $calendar)
     {
         $this->authorize('view', $calendar);
-        $events = $calendar->calendarEvents()->with('familyMember')->get();
+
+        $events = $calendar->calendarEvents()
+            ->with('familyMember')
+            ->orderBy('event_date')
+            ->orderBy('start_time')
+            ->get();
+
         return view('calendar-events.index', compact('calendar', 'events'));
     }
 
@@ -26,6 +32,7 @@ class CalendarEventController extends Controller
     public function create(Calendar $calendar)
     {
         $this->authorize('view', $calendar);
+
         return view('calendar-events.create', compact('calendar'));
     }
 
@@ -35,7 +42,14 @@ class CalendarEventController extends Controller
     public function store(StoreCalendarEventRequest $request, Calendar $calendar)
     {
         $this->authorize('view', $calendar);
-        $calendar->calendarEvents()->create($request->validated());
+
+        $data = $request->validated();
+
+        if ($request->hasFile('cover_image_path')) {
+            $data['cover_image_path'] = $request->file('cover_image_path')->store('calendar-covers', 'public');
+        }
+
+        $calendar->calendarEvents()->create($data);
 
         return redirect()->route('calendars.show', $calendar)
             ->with('success', 'אירוע נוצר בהצלחה');
@@ -48,6 +62,7 @@ class CalendarEventController extends Controller
     {
         $this->authorize('view', $calendar);
         $calendarEvent->load('familyMember');
+
         return view('calendar-events.show', compact('calendar', 'calendarEvent'));
     }
 
@@ -57,7 +72,9 @@ class CalendarEventController extends Controller
     public function edit(Calendar $calendar, CalendarEvent $calendarEvent)
     {
         $this->authorize('view', $calendar);
+
         $familyMembers = $calendar->user->familyMembers;
+
         return view('calendar-events.edit', compact('calendar', 'calendarEvent', 'familyMembers'));
     }
 
@@ -67,7 +84,28 @@ class CalendarEventController extends Controller
     public function update(UpdateCalendarEventRequest $request, Calendar $calendar, CalendarEvent $calendarEvent)
     {
         $this->authorize('view', $calendar);
-        $calendarEvent->update($request->validated());
+
+        $data = $request->validated();
+
+        if ($request->hasFile('cover_image_path')) {
+            if ($calendarEvent->cover_image_path) {
+                \Storage::disk('public')->delete($calendarEvent->cover_image_path);
+            }
+
+            $data['cover_image_path'] = $request->file('cover_image_path')->store('calendar-covers', 'public');
+        }
+
+        // Auto-generated events are derived from the family member's birth /
+        // anniversary date, so only presentation fields may be changed.
+        if ($calendarEvent->is_auto_generated) {
+            $data = Arr::only($data, ['title', 'description', 'cover_image_path']);
+
+            if (array_key_exists('title', $data)) {
+                $data['title_customized'] = true;
+            }
+        }
+
+        $calendarEvent->update($data);
 
         return redirect()->route('calendars.show', $calendar)
             ->with('success', 'האירוע עודכן בהצלחה');
@@ -79,9 +117,20 @@ class CalendarEventController extends Controller
     public function destroy(Calendar $calendar, CalendarEvent $calendarEvent)
     {
         $this->authorize('view', $calendar);
+        $this->ensureDeletable($calendarEvent);
+
         $calendarEvent->delete();
 
         return redirect()->route('calendars.show', $calendar)
             ->with('success', 'האירוע נמחק בהצלחה');
+    }
+
+    /**
+     * Block deletion of auto-generated events, which are derived from the
+     * attached family member's birth / anniversary date.
+     */
+    protected function ensureDeletable(CalendarEvent $calendarEvent): void
+    {
+        abort_if($calendarEvent->is_auto_generated, 403, 'אירועים אוטומטיים נגזרים מחבר המשפחה ואינם ניתנים למחיקה.');
     }
 }

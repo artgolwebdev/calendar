@@ -215,6 +215,110 @@ Alpine.data('coverCrop', (options = {}) => ({
     },
 }));
 
+const createThemePicker = (options = {}) => ({
+    themesOpen: false,
+    pendingTheme: null,
+    applying: false,
+    applyError: '',
+
+    init() {
+        const pending = sessionStorage.getItem('family-calendar-theme-applied');
+        if (pending) {
+            sessionStorage.removeItem('family-calendar-theme-applied');
+            this.$nextTick(() => this.showToast(pending));
+        }
+    },
+
+    get pendingName() {
+        return options.themes?.[this.pendingTheme]?.name ?? '';
+    },
+
+    selectTheme(key) {
+        this.applyError = '';
+        this.pendingTheme = key;
+    },
+
+    cancelTheme() {
+        this.pendingTheme = null;
+    },
+
+    async applyTheme(key) {
+        this.applying = true;
+        this.applyError = '';
+
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]');
+            const formData = new FormData();
+            formData.append('theme', key);
+            if (options.month != null) {
+                formData.append('month', options.month);
+            }
+
+            const res = await fetch(options.applyUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrf ? csrf.getAttribute('content') : '',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'אירעה שגיאה בהחלת הנושא');
+            }
+
+            const message = data.message || '';
+            let needsReload = false;
+
+            if (window.__monthGrid) {
+                needsReload = window.__monthGrid.applyThemeFields(data.fields || {});
+            }
+
+            this.themesOpen = false;
+            this.pendingTheme = null;
+
+            if (needsReload) {
+                sessionStorage.setItem('family-calendar-theme-applied', message);
+
+                window.location.reload();
+
+                return;
+            }
+
+            this.showToast(message);
+        } catch (error) {
+            this.applyError = error.message || 'אירעה שגיאה בהחלת הנושא';
+        } finally {
+            this.applying = false;
+        }
+    },
+
+    showToast(message) {
+        let toast = document.getElementById('themeToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'themeToast';
+            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-full bg-ink-950 text-volt text-sm font-bold shadow-2xl transition-opacity duration-300';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+    },
+});
+
+Alpine.data('themePicker', (options = {}) => ({
+    ...createThemePicker(options),
+}));
+
+Alpine.data('monthPage', (options = {}) => ({
+    settingsOpen: options.settingsOpen ?? false,
+    ...createThemePicker(options),
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

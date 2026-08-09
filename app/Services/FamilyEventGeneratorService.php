@@ -76,17 +76,18 @@ class FamilyEventGeneratorService
     {
         $date = $type === 'birthday' ? $member->birth_date : $member->anniversary_date;
 
-        $calendar->calendarEvents()->updateOrCreate(
-            [
-                'family_member_id' => $member->id,
-                'event_type' => $type,
-                'is_auto_generated' => true,
-            ],
-            [
-                'title' => $this->baseTitle($member, $type),
-                'event_date' => $date,
-            ]
-        );
+        $event = $calendar->calendarEvents()->firstOrNew([
+            'family_member_id' => $member->id,
+            'event_type' => $type,
+            'is_auto_generated' => true,
+        ]);
+
+        if (! $event->exists || ! $event->title_customized) {
+            $event->title = $this->baseTitle($member, $type);
+        }
+
+        $event->event_date = $date;
+        $event->save();
     }
 
     private function baseTitle(FamilyMember $member, string $type): string

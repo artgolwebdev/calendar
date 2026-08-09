@@ -17,8 +17,14 @@
         )['year'];
     @endphp
 
-    <div class="py-8" x-data="{ settingsOpen: {{ $errors->any() ? 'true' : 'false' }} }"
-        @keydown.escape.window="settingsOpen = false">
+    <div class="py-8"
+        x-data="monthPage({
+            settingsOpen: {{ $errors->any() ? 'true' : 'false' }},
+            applyUrl: '{{ route('calendars.themes.apply', $calendar) }}',
+            month: {{ $monthPage->month_number }},
+            themes: @js(config('themes'))
+        })"
+        @keydown.escape.window="settingsOpen = false; themesOpen = false; pendingTheme = null">
         <div class="container">
             @if (session('success'))
                 <div class="mb-4 card p-4" style="background-color: #F0FFF4; border-color: #C6F6D5;">
@@ -89,16 +95,33 @@
                     </div>
                 @endif
 
-                {{-- Design settings toggle --}}
-                <button type="button" @click="settingsOpen = !settingsOpen"
-                    :class="settingsOpen ? 'bg-volt text-ink-950' : 'bg-ink-950/60 text-white hover:bg-ink-950/80'"
-                    class="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors backdrop-blur-sm"
-                    aria-label="הגדרות עיצוב" aria-expanded="false" :aria-expanded="settingsOpen ? 'true' : 'false'">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-                    </svg>
-                </button>
+                {{-- Design actions (themes + per-month settings toggle) --}}
+                <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
+                    {{-- Themes trigger --}}
+                    <button type="button" @click="themesOpen = !themesOpen"
+                        :class="themesOpen ? 'bg-volt text-ink-950' : 'bg-ink-950/60 text-white hover:bg-ink-950/80'"
+                        class="inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors backdrop-blur-sm"
+                        aria-label="נושאים" aria-expanded="false" :aria-expanded="themesOpen ? 'true' : 'false'">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 21a9 9 0 110-18c4.97 0 9 4.03 9 9a3 3 0 01-3 3h-2.5a2.5 2.5 0 00-2.5 2.5c0 1 .26 1.93.68 2.63.42.68.32 1.87-.68 1.87z" />
+                            <circle cx="7.5" cy="10.5" r="1.5" />
+                            <circle cx="12" cy="7.5" r="1.5" />
+                            <circle cx="16.5" cy="10.5" r="1.5" />
+                        </svg>
+                    </button>
+
+                    {{-- Design settings toggle --}}
+                    <button type="button" @click="settingsOpen = !settingsOpen"
+                        :class="settingsOpen ? 'bg-volt text-ink-950' : 'bg-ink-950/60 text-white hover:bg-ink-950/80'"
+                        class="inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors backdrop-blur-sm"
+                        aria-label="הגדרות עיצוב" aria-expanded="false" :aria-expanded="settingsOpen ? 'true' : 'false'">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="calendarGrid" dir="ltr" class="card p-3 sm:p-6 relative overflow-hidden"
@@ -256,26 +279,35 @@
 
                 <!-- Design Settings Offcanvas -->
                 @include('calendars.partials.month-design-settings')
+
+                <!-- Theme Picker -->
+                @include('calendars.partials.themes-picker', ['themesScope' => 'month'])
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const grid = document.getElementById('calendarGrid');
-            const overlay = document.getElementById('gridOverlay');
-            const dayCells = document.querySelectorAll('.day-cell:not(.day-cell-today):not(.day-cell-adjacent)');
+        window.__monthGrid = (function () {
+            const FONT_MAP = {
+                'default': "'Heebo', sans-serif",
+                'modern': "'Assistant', sans-serif",
+                'traditional': "'Frank Ruhl Libre', serif",
+                'elegant': "'Rubik', sans-serif"
+            };
 
-            const fontSelect = document.getElementById('font_choice');
-            const overlaySlider = document.getElementById('overlay_opacity');
-            const overlayValue = document.getElementById('overlayValue');
-            const bgColor = document.getElementById('day_box_bg_color');
-            const fontColor = document.getElementById('day_box_font_color');
-            const weekdayColor = document.getElementById('weekday_color');
-            const weekdayHeaders = document.querySelectorAll('.weekday-header');
-            const bgOpacity = document.getElementById('day_box_bg_opacity');
-            const dayBoxOpacityValue = document.getElementById('dayBoxOpacityValue');
-            const fileInput = document.getElementById('custom_image_path');
-            const filePreview = document.getElementById('customImagePreview');
+            let els = null;
+
+            function elements() {
+                if (els) return els;
+                els = {
+                    grid: document.getElementById('calendarGrid'),
+                    overlay: document.getElementById('gridOverlay'),
+                    dayCells: Array.from(document.querySelectorAll('.day-cell:not(.day-cell-today):not(.day-cell-adjacent)')),
+                    weekdayHeaders: Array.from(document.querySelectorAll('.weekday-header')),
+                    overlayValue: document.getElementById('overlayValue'),
+                    dayBoxOpacityValue: document.getElementById('dayBoxOpacityValue'),
+                };
+                return els;
+            }
 
             function hexToRgba(hex, alpha) {
                 hex = hex.replace('#', '');
@@ -285,13 +317,11 @@
                 return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
             }
 
-            function applyDayBoxStyle() {
-                const bg = bgColor ? bgColor.value : '#FFFFFF';
-                const font = fontColor ? fontColor.value : '#2B2E3A';
-                const opacity = bgOpacity ? bgOpacity.value : 100;
+            function applyDayBoxStyle(bg, font, opacity) {
+                const refs = elements();
                 const bgRgba = hexToRgba(bg, opacity / 100);
 
-                dayCells.forEach(function (cell) {
+                refs.dayCells.forEach(function (cell) {
                     cell.style.backgroundColor = bgRgba;
                     cell.style.color = font;
                     const number = cell.querySelector('.day-number');
@@ -301,16 +331,78 @@
                 });
             }
 
-            if (fontSelect && grid) {
-                const FONT_MAP = {
-                    'default': "'Heebo', sans-serif",
-                    'modern': "'Assistant', sans-serif",
-                    'traditional': "'Frank Ruhl Libre', serif",
-                    'elegant': "'Rubik', sans-serif"
-                };
+            function applyFont(key) {
+                const refs = elements();
+                refs.grid.style.fontFamily = FONT_MAP[key] || FONT_MAP['default'];
+            }
 
+            function applyOverlay(opacity) {
+                const refs = elements();
+                refs.overlay.style.backgroundColor = 'rgba(0, 0, 0, ' + (opacity / 100) + ')';
+                if (refs.overlayValue) refs.overlayValue.textContent = opacity;
+            }
+
+            function applyWeekday(color) {
+                const refs = elements();
+                refs.weekdayHeaders.forEach(function (header) {
+                    header.style.color = color;
+                });
+            }
+
+            function setValue(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            }
+
+            function applyThemeFields(fields) {
+                applyFont(fields.font_choice);
+                applyOverlay(fields.overlay_opacity);
+                applyWeekday(fields.weekday_color);
+                applyDayBoxStyle(fields.day_box_bg_color, fields.day_box_font_color, fields.day_box_bg_opacity);
+
+                setValue('font_choice', fields.font_choice);
+                setValue('overlay_opacity', fields.overlay_opacity);
+                setValue('day_box_bg_color', fields.day_box_bg_color);
+                setValue('day_box_font_color', fields.day_box_font_color);
+                setValue('day_box_bg_opacity', fields.day_box_bg_opacity);
+                setValue('weekday_color', fields.weekday_color);
+
+                const adjacent = document.getElementById('show_adjacent_month_days');
+                const adjacentChanged = adjacent && adjacent.checked !== Boolean(fields.show_adjacent_month_days);
+                if (adjacent) adjacent.checked = Boolean(fields.show_adjacent_month_days);
+
+                if (window.__settingsBaseline) window.__settingsBaseline.refresh();
+
+                return adjacentChanged;
+            }
+
+            return {
+                FONT_MAP: FONT_MAP,
+                applyFont: applyFont,
+                applyOverlay: applyOverlay,
+                applyWeekday: applyWeekday,
+                applyDayBoxStyle: applyDayBoxStyle,
+                applyThemeFields: applyThemeFields,
+            };
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const grid = document.getElementById('calendarGrid');
+            const overlay = document.getElementById('gridOverlay');
+            const fontSelect = document.getElementById('font_choice');
+            const overlaySlider = document.getElementById('overlay_opacity');
+            const overlayValue = document.getElementById('overlayValue');
+            const bgColor = document.getElementById('day_box_bg_color');
+            const fontColor = document.getElementById('day_box_font_color');
+            const weekdayColor = document.getElementById('weekday_color');
+            const bgOpacity = document.getElementById('day_box_bg_opacity');
+            const dayBoxOpacityValue = document.getElementById('dayBoxOpacityValue');
+            const fileInput = document.getElementById('custom_image_path');
+            const filePreview = document.getElementById('customImagePreview');
+
+            if (fontSelect && grid) {
                 const applyFont = function () {
-                    grid.style.fontFamily = FONT_MAP[fontSelect.value] || FONT_MAP['default'];
+                    window.__monthGrid.applyFont(fontSelect.value);
                 };
 
                 fontSelect.addEventListener('input', applyFont);
@@ -325,21 +417,25 @@
                 });
             }
 
-            if (bgColor) bgColor.addEventListener('input', applyDayBoxStyle);
-            if (fontColor) fontColor.addEventListener('input', applyDayBoxStyle);
+            if (bgColor || fontColor || bgOpacity) {
+                const applyDayBox = function () {
+                    const bg = bgColor ? bgColor.value : '#FFFFFF';
+                    const font = fontColor ? fontColor.value : '#2B2E3A';
+                    const opacity = bgOpacity ? bgOpacity.value : 100;
+                    window.__monthGrid.applyDayBoxStyle(bg, font, opacity);
+                };
 
-            if (weekdayColor) {
-                weekdayColor.addEventListener('input', function () {
-                    weekdayHeaders.forEach(function (header) {
-                        header.style.color = this.value;
-                    }.bind(this));
+                if (bgColor) bgColor.addEventListener('input', applyDayBox);
+                if (fontColor) fontColor.addEventListener('input', applyDayBox);
+                if (bgOpacity) bgOpacity.addEventListener('input', function () {
+                    if (dayBoxOpacityValue) dayBoxOpacityValue.textContent = this.value;
+                    applyDayBox();
                 });
             }
 
-            if (bgOpacity) {
-                bgOpacity.addEventListener('input', function () {
-                    if (dayBoxOpacityValue) dayBoxOpacityValue.textContent = this.value;
-                    applyDayBoxStyle();
+            if (weekdayColor) {
+                weekdayColor.addEventListener('input', function () {
+                    window.__monthGrid.applyWeekday(this.value);
                 });
             }
 
@@ -379,7 +475,7 @@
             }
 
             if (settingsForm && saveCta) {
-                const initialFormState = collectFormState(settingsForm);
+                let initialFormState = collectFormState(settingsForm);
 
                 const syncSaveCta = function () {
                     const current = collectFormState(settingsForm);
@@ -391,6 +487,13 @@
                         }
                     }
                     saveCta.classList.toggle('hidden', !changed);
+                };
+
+                window.__settingsBaseline = {
+                    refresh: function () {
+                        initialFormState = collectFormState(settingsForm);
+                        saveCta.classList.add('hidden');
+                    }
                 };
 
                 settingsForm.addEventListener('input', syncSaveCta);

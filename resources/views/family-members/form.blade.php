@@ -266,7 +266,13 @@
                                                 </div>
                                                 <p class="text-xs text-ink-500">{{ $event->event_date->format('d/m/Y') }}</p>
                                             </div>
-                                            <div>
+                                            <div class="flex items-center gap-3">
+                                                @if ($event->is_auto_generated)
+                                                    <span class="text-xs font-medium text-ink-400"
+                                                        title="אירוע אוטומטי — נוצר מתאריך ההולדת או יום הנישואין של חבר המשפחה. ניתן לערוך את הכותרת, התיאור ותמונת הכריכה.">
+                                                        אוטומטי
+                                                    </span>
+                                                @endif
                                                 <a href="{{ route('calendar-events.edit', [$event->calendar, $event]) }}" class="text-xs font-medium text-ink-900 hover:text-ink-950 hover:underline transition-colors">
                                                     ערוך אירוע
                                                 </a>

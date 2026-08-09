@@ -6,6 +6,9 @@
                 <p class="text-xs text-[#6B6B75] mt-1">בחר חודש לצפייה ועיצוב הלוח</p>
             </div>
             <div class="flex items-center gap-2">
+                <a href="{{ route('calendar-events.index', $calendar) }}" class="btn btn-secondary btn-sm">
+                    כל האירועים
+                </a>
                 <a href="{{ route('calendars.edit', $calendar) }}" class="btn btn-secondary btn-sm">
                     ערוך הגדרות
                 </a>
@@ -21,8 +24,29 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8"
+        x-data="themePicker({
+            applyUrl: '{{ route('calendars.themes.apply', $calendar) }}',
+            themes: @js(config('themes'))
+        })"
+        @keydown.escape.window="themesOpen = false; pendingTheme = null">
         <div class="container">
+            <div class="mb-6 flex items-center justify-between gap-3">
+                <p class="text-sm text-[#6B6B75]">החל נושא עיצוב אחיד על כל 12 חודשי הלוח</p>
+                <button type="button" @click="themesOpen = !themesOpen"
+                    :class="themesOpen ? 'bg-volt text-ink-950' : 'bg-ink-950 text-volt hover:bg-ink-800'"
+                    class="inline-flex items-center gap-2 h-10 px-5 rounded-full font-bold text-sm transition-colors shadow-sm"
+                    aria-label="נושאים" aria-expanded="false" :aria-expanded="themesOpen ? 'true' : 'false'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22a10 10 0 1 1 10-10c0 2.21-1.79 4-4 4h-2.5a2.5 2.5 0 0 0-2 4.04c.58.72.5 1.96-1.5 1.96Z" />
+                        <circle cx="7.5" cy="11.5" r="1.5" fill="currentColor" stroke="none" />
+                        <circle cx="11" cy="7" r="1.5" fill="currentColor" stroke="none" />
+                        <circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none" />
+                    </svg>
+                    נושאים
+                </button>
+            </div>
+
             @if (session('success'))
                 <div class="mb-6 p-4 rounded-lg bg-[#F0FDF4] border border-[#DCFCE7] text-[#15803D] text-sm font-medium flex items-center justify-between">
                     <span>{{ session('success') }}</span>
@@ -129,6 +153,9 @@
                     → חזור ללוח הבקרה
                 </a>
             </div>
+
+            <!-- Theme Picker -->
+            @include('calendars.partials.themes-picker', ['themesScope' => 'year'])
         </div>
     </div>
 </x-app-layout>

@@ -6,6 +6,8 @@
         ['label' => 'לוח שנה חדש', 'route' => 'calendars.create', 'pattern' => 'calendars.create', 'icon' => 'calendar'],
         ['label' => 'חברי משפחה', 'route' => 'family-members.index', 'pattern' => 'family-members.*', 'icon' => 'users'],
     ];
+
+    $eventsCalendar = Auth::user()->mainCalendar();
 @endphp
 
 <div x-data="{ profileOpen: {{ $profileActive ? 'true' : 'false' }} }" class="flex flex-col h-full bg-white">
@@ -84,6 +86,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Events (standalone) -->
+            @if ($eventsCalendar)
+                @php
+                    $eventsActive = request()->routeIs('calendar-events.*');
+                @endphp
+                <a href="{{ route('calendar-events.index', $eventsCalendar) }}"
+                   class="side-item relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $eventsActive ? 'bg-ink-100 text-ink-900' : 'text-ink-500 hover:bg-ink-100 hover:text-ink-900' }}"
+                   title="אירועים">
+                    @if ($eventsActive)
+                        <span class="side-active-bar absolute inset-y-2 start-0 w-1 rounded-full bg-volt" aria-hidden="true"></span>
+                        <span class="side-active-dot absolute inset-y-0 start-1 items-center" aria-hidden="true">
+                            <span class="w-1.5 h-1.5 rounded-full bg-volt"></span>
+                        </span>
+                    @endif
+                    <span class="shrink-0 {{ $eventsActive ? 'text-ink-900' : 'text-ink-400' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4" />
+                        </svg>
+                    </span>
+                    <span class="side-label">אירועים</span>
+                </a>
+            @endif
 
             <!-- Media (standalone) -->
             @if (Route::has('media.index'))

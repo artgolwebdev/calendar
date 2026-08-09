@@ -24,11 +24,13 @@ class StoreCalendarEventRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'event_date' => 'required|date',
-            'event_type' => 'required|in:birthday,anniversary,custom',
+            'event_type' => 'required|in:custom',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after:start_time',
             'family_member_id' => 'nullable|exists:family_members,id',
+            'cover_image_path' => 'nullable|image|max:51200',
         ];
     }
 }
