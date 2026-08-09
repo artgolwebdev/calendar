@@ -33,11 +33,11 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSeeInOrder([
+            'פרופיל',
             route('calendars.create'),
             'לוח שנה חדש',
             'חברי משפחה',
             'הספרייה שלי',
-            'פרופיל',
         ]);
     }
 
