@@ -218,8 +218,10 @@ Alpine.data('coverCrop', (options = {}) => ({
 const createThemePicker = (options = {}) => ({
     themesOpen: false,
     pendingTheme: null,
+    pendingName: '',
     applying: false,
     applyError: '',
+    themes: options.themes ?? {},
 
     init() {
         const pending = sessionStorage.getItem('family-calendar-theme-applied');
@@ -229,13 +231,10 @@ const createThemePicker = (options = {}) => ({
         }
     },
 
-    get pendingName() {
-        return options.themes?.[this.pendingTheme]?.name ?? '';
-    },
-
     selectTheme(key) {
         this.applyError = '';
         this.pendingTheme = key;
+        this.pendingName = this.themes?.[key]?.name ?? '';
     },
 
     cancelTheme() {

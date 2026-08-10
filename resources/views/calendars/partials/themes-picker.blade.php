@@ -104,7 +104,7 @@
                 class="btn btn-secondary flex-1 font-bold">
                 בטל
             </button>
-            <button type="button" @click="applyTheme(pendingTheme)" :disabled="applying"
+            <button type="button" id="applyThemeBtn" @click="applyTheme(pendingTheme)" :disabled="applying"
                 class="flex-1 btn bg-ink-950 text-white font-bold hover:bg-ink-800">
                 <span x-show="applying" x-cloak>מיישם...</span>
                 <span x-show="!applying" x-cloak>החל נושא</span>

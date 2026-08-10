@@ -18,6 +18,7 @@
 - **Monthly grid** — Gregorian and Hebrew dates, holidays, and events per day, with previous/next/“today” navigation and a cover banner (blue gradient placeholder when the calendar has no cover image)
 - **Day view** — click any day in the dashboard scroller or the monthly grid to open a single-day hour grid (00:00–23:00). Timed events are positioned server-side as overlapping side-by-side columns, all-day events and holidays appear as chips, a red current-time line marks “now” on today, and clicking an hour row opens the event form prefilled with that date and time
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
+- **Calendar themes** — five pre-built design themes (ירוק / כחול / שחור / ורוד / צהוב) defined in `config/themes.php`. The monthly view's theme picker applies a theme to the current month only, re-rendering the grid in place; the yearly overview's picker applies it to all 12 months at once in a single transaction-backed bulk update. Personal month background images are never touched.
 - **Media library** — a personal, per-user image library (`spatie/laravel-medialibrary`) with bulk upload, live previews and per-file progress bars, rename/delete, and a picker that lets you reuse a library image as a month background alongside the existing direct upload
 - **Media folders** — organize library images into folders via drag-and-drop or a per-image dropdown; every family member gets an auto-synced folder, and deleting a folder never deletes its media
 - **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars — regardless of whether the member or the calendar was created first — labeled with the member’s age or years married
@@ -102,6 +103,8 @@ vendor/bin/pint --dirty
 
 - **Design settings** — each of a calendar’s 12 month pages stores its own style; `MonthPageStyleService` resolves defaults and per-page overrides.
 
+- **Calendar themes** — `config/themes.php` defines the themes, each mapping to the seven month-page design fields (font, overlay opacity, day-box background/text colors and opacity, weekday color, adjacent-month toggle). `POST /calendars/{calendar}/themes/apply` (`CalendarThemeController::apply`, validated by `ApplyThemeRequest`) updates either a single month page — when a `month` (1–12) is supplied, as the monthly view does — or every month page at once in one transaction, as the yearly view does. The monthly view then re-applies the returned fields to the live grid via `window.__monthGrid.applyThemeFields`, reloading only when the theme flips `show_adjacent_month_days`; the yearly view just toasts. The shared offcanvas picker (`resources/views/calendars/partials/themes-picker.blade.php`) takes a `themesScope` (`'month'` or `'year'`) to tailor its copy, and the `themePicker` Alpine component in `resources/js/app.js` drives both views (the monthly one wraps it as `monthPage` alongside the design-settings state).
+
 - **Media library** — the `User` model uses `InteractsWithMedia` with a `user_media` collection and a `thumb` conversion. A `MediaPolicy` scopes every item to its owner (view/update/delete are forbidden across users), and deleting an item first nulls any `month_pages.background_media_id` references so no orphaned backgrounds remain. A month background can come from either the media library (`background_media_id`, resolved first) or a direct upload / legacy path (`custom_image_path` / `background_image_path`), with a picker in the month design settings.
 
 - **Media folders** — the library is organized into folders (`Folder` model, unique `user_id`+`name`, owned via `FolderPolicy`). The index page shows a sidebar with "All media" plus every folder; images are moved either by drag-and-drop onto a folder or from a per-image dropdown. Deleting a folder never deletes its media — the `folder_id` foreign key is `nullOnDelete`, so items simply return to All Media. Every family member gets an auto-synced folder: `FamilyMemberObserver` creates it on member creation, keeps its name in sync on updates (member-linked folders can't be renamed/deleted manually), and removes it when the member is deleted. `php artisan folders:backfill` creates folders for any members that predate the feature.
@@ -112,7 +115,7 @@ vendor/bin/pint --dirty
 
 ```
 app/
-├── Http/Controllers/       Auth, Calendar, CalendarEvent, Dashboard, FamilyMember, Media, Folder, MonthPage
+├── Http/Controllers/       Auth, Calendar, CalendarEvent, CalendarTheme, Dashboard, FamilyMember, Media, Folder, MonthPage
 ├── Mail/                   PasswordResetMail, WelcomeEmail (branded Hebrew RTL emails)
 ├── Models/                 Calendar, CalendarEvent, FamilyMember, Folder, Media, MonthPage, User
 ├── Notifications/          ResetPasswordNotification
@@ -131,7 +134,7 @@ app/
 lang/he/                       Hebrew translations (validation, passwords, auth)
 resources/views/
 ├── auth/                  Login, register, forgot/reset password (Hebrew RTL)
-├── calendars/              Yearly, monthly and single-day views, design settings partial
+├── calendars/              Yearly, monthly and single-day views, design-settings + theme picker partials
 ├── calendar-events/        Event create/edit (with start/end time)
 ├── components/             cover-upload.blade.php (21:9 crop editor for calendar covers)
 ├── components/dashboard/   Dashboard day-scroller (RTL strip, arrows, drag, auto-scroll)
@@ -141,7 +144,7 @@ resources/views/
 ├── media/                  Media library index (sidebar with folders, bulk upload, rename/delete/move)
 └── dashboard.blade.php     Dashboard
 tests/
-├── Feature/                Auth, Calendar, Dashboard, DayView, FamilyEventGeneration, MainCalendar, MediaFolder, MediaLibrary, MonthPageSettings
+├── Feature/                Auth, Calendar, CalendarTheme, Dashboard, DayView, FamilyEventGeneration, MainCalendar, MediaFolder, MediaLibrary, MonthPageSettings
 └── Unit/                   DayViewLayoutService, HebrewDateService
 ```
 
