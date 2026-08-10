@@ -1,8 +1,13 @@
 <x-app-layout>
     <div class="py-8">
         <div class="container">
+            <a href="{{ route('calendars.edit', $calendar) }}"
+                class="inline-flex items-center gap-1.5 mb-4 text-sm font-semibold text-ink-500 hover:text-ink-900 transition-colors">
+                → חזרה לעריכת לוח השנה
+            </a>
+
             @if (session('success'))
-                <div class="mb-4 p-4 rounded-xl bg-volt/15 border border-volt text-ink-900 text-sm font-semibold">
+                <div class="alert alert-success mb-4">
                     {{ session('success') }}
                 </div>
             @endif
@@ -11,9 +16,11 @@
             <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 class="text-3xl font-bold text-ink-950 tracking-tight">חברי משפחה</h1>
-                    <p class="mt-1 text-sm text-ink-500">ניהול פרטי חברי המשפחה, ימי הולדת, תאריכי נישואין והתמונות שלהם</p>
+                    <p class="mt-1 text-sm text-ink-500">
+                        {{ $calendar->name }} — ניהול פרטי חברי המשפחה, ימי הולדת, תאריכי נישואין והתמונות שלהם
+                    </p>
                 </div>
-                <a href="{{ route('family-members.create') }}"
+                <a href="{{ route('family-members.create', $calendar) }}"
                     class="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-ink-900 text-volt font-bold text-sm transition-colors hover:bg-ink-800 active:bg-ink-950">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 5v14m-7-7h14" />
@@ -46,7 +53,7 @@
                                 <tr class="hover:bg-ink-50/80 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
-                                            <a href="{{ route('family-members.show', $familyMember) }}" class="text-sm font-semibold text-ink-900 hover:text-ink-950 hover:underline transition-colors">
+                                            <a href="{{ route('family-members.show', [$calendar, $familyMember]) }}" class="text-sm font-semibold text-ink-900 hover:text-ink-950 hover:underline transition-colors">
                                                 {{ $familyMember->name }}
                                             </a>
                                             <span class="chip bg-ink-100 text-ink-500" data-media-count="{{ $familyMember->folder?->media_count ?? 0 }}">
@@ -70,11 +77,11 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <div class="flex items-center gap-3">
-                                            <a href="{{ route('family-members.edit', $familyMember) }}" class="text-xs font-medium text-ink-900 hover:text-ink-950 hover:underline transition-colors">
+                                            <a href="{{ route('family-members.edit', [$calendar, $familyMember]) }}" class="text-xs font-medium text-ink-900 hover:text-ink-950 hover:underline transition-colors">
                                                 ערוך
                                             </a>
                                             <span class="text-ink-200">|</span>
-                                            <form action="{{ route('family-members.destroy', $familyMember) }}" method="POST" class="inline">
+                                            <form action="{{ route('family-members.destroy', [$calendar, $familyMember]) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-xs font-medium text-danger hover:text-danger-hover transition-colors"
@@ -88,8 +95,8 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center">
-                                        <p class="text-sm text-ink-500 mb-4">עדיין לא הוספת חברי משפחה</p>
-                                        <a href="{{ route('family-members.create') }}"
+                                        <p class="text-sm text-ink-500 mb-4">עדיין לא הוספת חברי משפחה ללוח הזה</p>
+                                        <a href="{{ route('family-members.create', $calendar) }}"
                                             class="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-ink-900 text-volt font-bold text-sm transition-colors hover:bg-ink-800 active:bg-ink-950">
                                             הוסף חבר משפחה
                                         </a>

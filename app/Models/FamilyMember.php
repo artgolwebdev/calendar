@@ -10,21 +10,29 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class FamilyMember extends Model
 {
     protected $fillable = [
-        'user_id',
+        'calendar_id',
         'name',
         'birth_date',
         'anniversary_date',
         'notes',
+        'hobbies',
+        'favorite_sports',
+        'favorite_music',
+        'favorite_food',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
         'anniversary_date' => 'date',
+        'hobbies' => 'array',
+        'favorite_sports' => 'array',
+        'favorite_music' => 'array',
+        'favorite_food' => 'array',
     ];
 
-    public function user(): BelongsTo
+    public function calendar(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Calendar::class);
     }
 
     public function calendarEvents(): HasMany

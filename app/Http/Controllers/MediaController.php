@@ -23,14 +23,14 @@ class MediaController extends Controller
     {
         $user = Auth::user();
 
-        $folders = $user->folders()->withCount('media')->get();
+        $folders = Folder::where('user_id', $user->id)->withCount('media')->get();
 
         $currentFolder = null;
         $allMedia = $user->getMedia('user_media')->sortByDesc('id');
         $media = $allMedia;
 
         if ($request->filled('folder')) {
-            $currentFolder = $user->folders()->find($request->integer('folder'));
+            $currentFolder = $folders->firstWhere('id', $request->integer('folder'));
 
             if ($currentFolder !== null) {
                 $media = $allMedia->where('folder_id', $currentFolder->id);
@@ -47,7 +47,7 @@ class MediaController extends Controller
     {
         $user = Auth::user();
 
-        $folders = $user->folders()->withCount('media')->get();
+        $folders = Folder::where('user_id', $user->id)->withCount('media')->get();
 
         return view('media.upload', compact('folders'));
     }

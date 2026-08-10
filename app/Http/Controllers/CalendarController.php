@@ -164,7 +164,12 @@ class CalendarController extends Controller
     {
         $this->authorize('update', $calendar);
 
-        return view('calendars.edit', compact('calendar'));
+        $familyMembers = $calendar->familyMembers()
+            ->with(['folder' => fn ($query) => $query->withCount('media')])
+            ->orderBy('name')
+            ->get();
+
+        return view('calendars.edit', compact('calendar', 'familyMembers'));
     }
 
     /**

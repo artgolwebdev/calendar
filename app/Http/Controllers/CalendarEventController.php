@@ -73,7 +73,7 @@ class CalendarEventController extends Controller
     {
         $this->authorize('view', $calendar);
 
-        $familyMembers = $calendar->user->familyMembers;
+        $familyMembers = $calendar->familyMembers;
 
         return view('calendar-events.edit', compact('calendar', 'calendarEvent', 'familyMembers'));
     }

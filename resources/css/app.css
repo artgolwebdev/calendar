@@ -2,6 +2,140 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Design System — single source of truth
+   --------------------------------------------------------------------------
+   Color palette mirrors the Tailwind tokens in tailwind.config.js
+   (ink = neutrals, volt = brand accent, danger = destructive) and is exposed
+   here as CSS custom properties so runtime JS / inline styles can reference
+   the same values.
+
+   Buttons (see Part 2 of the audit):
+     .btn-primary          solid black, volt text — the single primary action
+                           per section (Save, Create, Today, Upload, Apply…)
+     .btn-volt             solid volt, black text — primary action sitting on
+                           a dark surface (success panel CTA)
+     .btn-outline          white + border — secondary actions (Cancel, back)
+     .btn-outline-inverse  white + translucent border on dark surfaces
+     .btn-ghost            transparent, muted — tertiary / link-like actions
+     .btn-subtle           light-gray fill, no border — tertiary grouped near
+                           a primary button
+     .btn-danger           white + red border — destructive (keep destructive)
+     .btn-destructive-solid  solid red — destructive confirm
+     .btn-icon             compact black circular icon button (repeated small
+                           actions: edit / delete / move / toggles)
+     .btn-icon-ghost       compact light circular icon button (close, arrows)
+     .btn-icon-sm / .btn-icon-lg  size modifiers
+     .btn-sm / .btn-lg / .btn-xl  height modifiers
+
+   Rule: if a section shows more than one blackish button, at most one may be
+   solid primary — the rest use outline / subtle / icon variants so the
+   primary action stays visually distinct.
+
+   Icon system: Heroicons-style outline SVGs (24x24 viewBox, fill=none,
+   stroke=currentColor, stroke-width 1.8-2.5, round caps) inlined directly.
+   Standard sizes — .btn-icon: w-5 h-5 · .btn-icon-sm: w-3.5 h-3.5 ·
+   leading button icon: w-5 h-5 · inline chips/rows: w-4 h-4.
+   ========================================================================== */
+
+:root {
+    /* Neutral ink scale (mirrors tailwind `ink`) */
+    --color-bg: #F7F7F8;
+    --color-surface: #FFFFFF;
+    --color-white: #FFFFFF;
+    --color-border: #E5E5E8;
+    --color-border-hover: #D4D4D8;
+    --color-text-primary: #18181B;
+    --color-text-secondary: #71717A;
+    --color-text-muted: #A1A1AA;
+
+    /* Blackish primary */
+    --color-primary: #18181B;
+    --color-primary-hover: #27272A;
+    --color-primary-strong: #0C0C0E;
+
+    /* Volt brand accent */
+    --color-accent: #CCFF00;
+    --color-accent-hover: #D6FF1A;
+    --color-accent-soft: #F6FFC2;
+    --color-accent-ring: rgba(204, 255, 0, 0.35);
+
+    /* Status */
+    --color-error: #DC2626;
+    --color-error-hover: #B91C1C;
+    --color-error-light: #FEF2F2;
+    --color-success: #16A34A;
+    --color-success-bg: #F0FDF4;
+    --color-success-border: #DCFCE7;
+
+    /* Typography */
+    --font-body: 'Heebo', 'Rubik', 'Assistant', system-ui, -apple-system, sans-serif;
+
+    /* Type scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.625rem;
+    --text-3xl: 1.875rem;
+
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+
+    /* Radius */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.625rem;
+    --radius-lg: 0.75rem;
+
+    /* Shadows */
+    --shadow-card: 0 1px 2px 0 rgba(12, 12, 14, 0.04);
+    --shadow-pop: 0 10px 30px -8px rgba(12, 12, 14, 0.18);
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+.container {
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--space-4);
+}
+
+@media (min-width: 640px) {
+    .container { padding-inline: var(--space-6); }
+}
+
+@media (min-width: 1024px) {
+    .container { padding-inline: var(--space-8); }
+}
+
 /* Cropper.js theme overrides */
 .cropper-view-box.cropper-view-box {
     outline: 2px solid #CCFF00;
@@ -15,4 +149,390 @@
 .cropper-line.cropper-line,
 .cropper-point.cropper-point {
     background-color: #CCFF00;
+}
+
+/* Collapsible desktop sidebar (transition helpers driven by Alpine store) */
+.side-active-dot {
+    display: none;
+}
+
+.sidebar-ready .side-pad {
+    transition: padding 300ms ease-in-out;
+}
+
+.sidebar-ready .side-aside {
+    transition: width 300ms ease-in-out;
+}
+
+@media (min-width: 1024px) {
+    .side-pad.side-pad {
+        padding-inline-start: 18rem;
+    }
+
+    .side-aside {
+        width: 18rem;
+    }
+
+    .app-sidebar-collapsed .side-pad {
+        padding-inline-start: 5rem;
+    }
+
+    .app-sidebar-collapsed .side-aside {
+        width: 5rem;
+    }
+
+    .app-sidebar-collapsed .side-label,
+    .app-sidebar-collapsed .side-user-text,
+    .app-sidebar-collapsed .side-chevron,
+    .app-sidebar-collapsed .side-submenu,
+    .app-sidebar-collapsed .side-active-bar {
+        display: none;
+    }
+
+    .app-sidebar-collapsed .side-item,
+    .app-sidebar-collapsed .side-user {
+        justify-content: center;
+    }
+
+    .app-sidebar-collapsed .side-active-dot {
+        display: flex;
+    }
+}
+
+@layer components {
+    /* ---------- Cards ---------- */
+    .card {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+    }
+
+    /* ---------- Alerts ---------- */
+    .alert {
+        padding: 1rem;
+        border-radius: var(--radius-lg);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        line-height: 1.5;
+    }
+
+    .alert-success {
+        background-color: rgba(204, 255, 0, 0.15);
+        border: 1px solid var(--color-accent);
+        color: var(--color-primary-strong);
+    }
+
+    .alert-error {
+        background-color: var(--color-error-light);
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        color: var(--color-error);
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        height: 2.5rem;
+        padding: 0 1.125rem;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        font-weight: 600;
+        font-size: var(--text-sm);
+        line-height: 1;
+        white-space: nowrap;
+        text-decoration: none;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: var(--color-accent);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--color-primary-hover);
+        color: var(--color-accent);
+    }
+
+    .btn-primary:active {
+        background-color: var(--color-primary-strong);
+    }
+
+    .btn-volt {
+        background-color: var(--color-accent);
+        color: var(--color-primary-strong);
+    }
+
+    .btn-volt:hover {
+        background-color: var(--color-accent-hover);
+        color: var(--color-primary-strong);
+    }
+
+    .btn-outline {
+        background-color: var(--color-surface);
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+    }
+
+    .btn-outline:hover {
+        background-color: var(--color-bg);
+        border-color: var(--color-border-hover);
+        color: var(--color-text-primary);
+    }
+
+    .btn-outline-inverse {
+        background-color: transparent;
+        color: #FFFFFF;
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-outline-inverse:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+    }
+
+    .btn-ghost {
+        background-color: transparent;
+        color: var(--color-text-secondary);
+        border-color: transparent;
+    }
+
+    .btn-ghost:hover {
+        background-color: var(--color-bg);
+        color: var(--color-text-primary);
+    }
+
+    .btn-subtle {
+        background-color: var(--color-bg);
+        color: var(--color-text-primary);
+        border-color: transparent;
+    }
+
+    .btn-subtle:hover {
+        background-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
+
+    .btn-danger,
+    .btn-destructive {
+        background-color: var(--color-surface);
+        color: var(--color-error);
+        border-color: rgba(220, 38, 38, 0.4);
+    }
+
+    .btn-danger:hover,
+    .btn-destructive:hover {
+        background-color: var(--color-error-light);
+        border-color: var(--color-error);
+        color: var(--color-error);
+    }
+
+    .btn-danger-solid,
+    .btn-destructive-solid {
+        background-color: var(--color-error);
+        color: #FFFFFF;
+        border-color: transparent;
+    }
+
+    .btn-danger-solid:hover,
+    .btn-destructive-solid:hover {
+        background-color: var(--color-error-hover);
+        color: #FFFFFF;
+    }
+
+    .btn-sm {
+        height: 2rem;
+        padding: 0 0.75rem;
+        font-size: var(--text-xs);
+        border-radius: var(--radius-sm);
+    }
+
+    .btn-lg {
+        height: 2.75rem;
+        padding: 0 1.5rem;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        border-radius: var(--radius-lg);
+    }
+
+    .btn-xl {
+        height: 3rem;
+        padding: 0 1.5rem;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        border-radius: var(--radius-lg);
+    }
+
+    /* Compact circular icon buttons */
+    .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 9999px;
+        border: none;
+        background-color: rgba(12, 12, 14, 0.85);
+        color: #FFFFFF;
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    .btn-icon:hover {
+        background-color: var(--color-primary);
+        color: var(--color-accent);
+    }
+
+    .btn-icon svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .btn-icon-ghost {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 9999px;
+        border: none;
+        background-color: transparent;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    .btn-icon-ghost:hover {
+        background-color: var(--color-bg);
+        color: var(--color-text-primary);
+    }
+
+    .btn-icon-ghost svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .btn-icon-sm {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .btn-icon-sm svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    .btn-icon-lg {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .btn-icon-lg svg {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+
+    /* ---------- Forms ---------- */
+    .input {
+        width: 100%;
+        height: 2.5rem;
+        padding: 0 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: var(--text-sm);
+        font-family: var(--font-body);
+        background-color: var(--color-surface);
+        color: var(--color-text-primary);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    textarea.input {
+        height: auto;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px var(--color-accent-ring);
+    }
+
+    .label {
+        display: block;
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        margin-bottom: 0.375rem;
+    }
+
+    /* ---------- Badges / Chips ---------- */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: var(--text-xs);
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .chip-holiday {
+        background-color: #DCFCE7;
+        color: #15803D;
+    }
+
+    .chip-event {
+        background-color: #FFEDD5;
+        color: #C2410C;
+    }
+
+    .chip-birthday {
+        background-color: #F3E8FF;
+        color: #6B21A8;
+    }
+
+    .chip-anniversary {
+        background-color: #E0F2FE;
+        color: #0369A1;
+    }
+
+    /* ---------- Typography helpers ---------- */
+    .page-title {
+        font-size: var(--text-3xl);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        color: var(--color-primary-strong);
+    }
+
+    .page-subtitle {
+        margin-top: 0.25rem;
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+    }
+
+    .section-title {
+        font-size: var(--text-base);
+        font-weight: 700;
+        color: var(--color-primary-strong);
+    }
+
+    .link {
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        transition: color 0.15s ease-in-out;
+    }
+
+    .link:hover {
+        color: var(--color-text-primary);
+    }
 }

@@ -20,13 +20,13 @@
 - **Design settings per month** — font, overlay opacity, day-box background/text colors and opacity, weekday color, background image, and an adjacent-month days toggle, in a collapsible accordion
 - **Calendar themes** — five pre-built design themes (ירוק / כחול / שחור / ורוד / צהוב) defined in `config/themes.php`. The monthly view's theme picker applies a theme to the current month only, re-rendering the grid in place; the yearly overview's picker applies it to all 12 months at once in a single transaction-backed bulk update. Personal month background images are never touched.
 - **Media library** — a personal, per-user image library (`spatie/laravel-medialibrary`) with bulk upload, live previews and per-file progress bars, rename/delete, and a picker that lets you reuse a library image as a month background alongside the existing direct upload
-- **Media folders** — organize library images into folders via drag-and-drop or a per-image dropdown; every family member gets an auto-synced folder, and deleting a folder never deletes its media
-- **Family members** — birthdays and marriage anniversaries automatically become recurring events on all of the user’s calendars — regardless of whether the member or the calendar was created first — labeled with the member’s age or years married
+- **Media folders** — organize library images into folders via drag-and-drop or a per-image dropdown; manual folders are user-global, while each calendar and its family members get an auto-synced folder tree (calendar root → member subfolders), and deleting a folder never deletes its media
+- **Family members** — each calendar has its own family members, managed from the calendar's edit page. Birthdays and marriage anniversaries automatically become recurring events on the member's calendar, labeled with the member’s age or years married. Every member can carry four multi-value tag lists (תחביבים, ספורט אהוב, מוזיקה אהובה, אוכל אהוב) powered by a reusable `<x-tag-input>` chip component
 - **Calendar events** — birthdays, anniversaries, and custom events, with optional start/end times that place events on the day view
 - **Transactional emails** — a welcome email and a branded password-reset email, both in Hebrew RTL and both built on one shared, RTL-safe layout (`resources/views/emails/layouts/transactional.blade.php`), sent via Resend. The welcome email fires on the `Registered` event after sign-up (dispatched through the queue, so it sends immediately when `QUEUE_CONNECTION=sync`); the reset email is sent synchronously by the password-reset notification
 - **Jewish holidays** — fetched from the Hebcal API and grouped per month
 - **Hebrew date conversion** — built-in service with leap-year support (אדר א׳ / אדר ב׳)
-- **Side navigation** — a stripped top navbar (brand + “Dashboard”) with the remaining links (New Calendar, Family Members, Media, Profile, Log out) in a permanent side panel on desktop (`lg:`) and a blurred slide-in offcanvas menu on mobile/tablet (close via backdrop click, Escape, or navigating)
+- **Side navigation** — a stripped top navbar (brand + “Dashboard”) with the remaining links (New Calendar, Media, Profile, Log out) in a permanent side panel on desktop (`lg:`) and a blurred slide-in offcanvas menu on mobile/tablet (close via backdrop click, Escape, or navigating)
 - Fully **RTL** Hebrew UI, responsive down to mobile
 
 ## Tech Stack
@@ -89,7 +89,7 @@ vendor/bin/pint --dirty
 
 ## How It Works
 
-- **Auto-generated family events** — creating or updating a `FamilyMember` fires `FamilyMemberObserver`, which uses `FamilyEventGeneratorService` to upsert one canonical birthday/anniversary event per date-type on every calendar owned by the user. Creating a calendar fires `CalendarObserver`, which syncs all existing members onto it, so events are generated regardless of creation order. Deleting a member removes their auto events. Events are stored with their original date, and the month/year views resolve them against the displayed year (Gregorian recurrence), handling February 29 gracefully and showing the member’s age or years married.
+- **Auto-generated family events** — creating or updating a `FamilyMember` fires `FamilyMemberObserver`, which uses `FamilyEventGeneratorService` to upsert one canonical birthday/anniversary event per date-type on the member's calendar. Moving a member to a different calendar purges the old calendar's auto events and re-syncs them onto the new one. Deleting a member removes their auto events. Events are stored with their original date, and the month/year views resolve them against the displayed year (Gregorian recurrence), handling February 29 gracefully and showing the member’s age or years married.
 
 - **Jewish holidays** — `IsraeliHolidaysService` queries the Hebcal API per year (cached) and the calendar views filter for major holidays.
 
@@ -107,7 +107,7 @@ vendor/bin/pint --dirty
 
 - **Media library** — the `User` model uses `InteractsWithMedia` with a `user_media` collection and a `thumb` conversion. A `MediaPolicy` scopes every item to its owner (view/update/delete are forbidden across users), and deleting an item first nulls any `month_pages.background_media_id` references so no orphaned backgrounds remain. A month background can come from either the media library (`background_media_id`, resolved first) or a direct upload / legacy path (`custom_image_path` / `background_image_path`), with a picker in the month design settings.
 
-- **Media folders** — the library is organized into folders (`Folder` model, unique `user_id`+`name`, owned via `FolderPolicy`). The index page shows a sidebar with "All media" plus every folder; images are moved either by drag-and-drop onto a folder or from a per-image dropdown. Deleting a folder never deletes its media — the `folder_id` foreign key is `nullOnDelete`, so items simply return to All Media. Every family member gets an auto-synced folder: `FamilyMemberObserver` creates it on member creation, keeps its name in sync on updates (member-linked folders can't be renamed/deleted manually), and removes it when the member is deleted. `php artisan folders:backfill` creates folders for any members that predate the feature.
+- **Media folders** — the library is organized into folders (`Folder` model, owned via `FolderPolicy`). Manual folders are user-global (scoped by `user_id`). Each calendar also gets an auto-synced root folder (`calendar_id` set, no parent), and every family member gets a subfolder nested under their calendar's root (`parent_id` set). The index page shows a sidebar with "All media", manual folders, and each calendar's folder tree; images are moved either by drag-and-drop onto a folder or from a per-image dropdown. Deleting a folder never deletes its media — the `folder_id` foreign key is `nullOnDelete`, so items simply return to All Media. Member-linked folders and calendar roots can't be renamed/deleted manually: `FamilyMemberObserver` creates a member's folder on creation, keeps its name in sync on updates, and removes it when the member is deleted, while `CalendarObserver` creates and renames a calendar's root folder. `php artisan folders:backfill` creates folders for any members that predate the feature.
 
 - **Cover image cropping** — `resources/views/components/cover-upload.blade.php` (backed by the `coverCrop` Alpine component in `resources/js/app.js`) wraps the `cover_image_path` file input. Selecting an image (via the picker or drag-and-drop) opens a Cropper.js modal locked to `21/9` with `viewMode: 1`, `dragMode: 'move'`, and wheel/button zoom. On confirm, `getCroppedCanvas({ maxWidth: 1920, fillColor: '#FFFFFF', imageSmoothingQuality: 'high' })` exports a JPEG blob (quality 0.9) that replaces the input's file list through `DataTransfer`, so the normal multipart submit uploads the already-cropped image — no backend changes, and if JS fails the raw file still uploads. Cancel restores the previous staged file or clears the input; edit shows the current cover until replaced. The single stored file is referenced directly by the calendar show banner, the month-view banner, and the dashboard card, so no per-month copies are needed.
 
@@ -136,12 +136,12 @@ resources/views/
 ├── auth/                  Login, register, forgot/reset password (Hebrew RTL)
 ├── calendars/              Yearly, monthly and single-day views, design-settings + theme picker partials
 ├── calendar-events/        Event create/edit (with start/end time)
-├── components/             cover-upload.blade.php (21:9 crop editor for calendar covers)
+├── components/             cover-upload.blade.php (21:9 crop editor), tag-input.blade.php (multi-value tag/chip fields)
 ├── components/dashboard/   Dashboard day-scroller (RTL strip, arrows, drag, auto-scroll)
 ├── emails/                 Shared RTL-safe layout (layouts/transactional.blade.php), welcome.blade.php, password-reset.blade.php
-├── family-members/         Member CRUD
+├── family-members/         Member CRUD (nested under a calendar)
 ├── layouts/                App layout, navigation (navbar + side panel), side-menu partial
-├── media/                  Media library index (sidebar with folders, bulk upload, rename/delete/move)
+├── media/                  Media library index (sidebar with folder tree, bulk upload, rename/delete/move)
 └── dashboard.blade.php     Dashboard
 tests/
 ├── Feature/                Auth, Calendar, CalendarTheme, Dashboard, DayView, FamilyEventGeneration, MainCalendar, MediaFolder, MediaLibrary, MonthPageSettings

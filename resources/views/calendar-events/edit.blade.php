@@ -20,7 +20,7 @@
             </div>
 
             @if ($errors->any())
-                <div class="mb-6 p-4 rounded-xl bg-danger-light border border-danger/30 text-danger text-sm font-medium">
+                <div class="alert alert-error mb-6">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -115,7 +115,7 @@
                             @if ($isAuto) disabled class="input opacity-60 cursor-not-allowed"
                             @else class="input" @endif>
                             <option value="">ללא שיוך לחבר משפחה</option>
-                            @foreach ($calendar->user->familyMembers as $member)
+                            @foreach ($calendar->familyMembers as $member)
                                 <option value="{{ $member->id }}" {{ old('family_member_id', $calendarEvent->family_member_id) == $member->id ? 'selected' : '' }}>
                                     {{ $member->name }}
                                 </option>
@@ -132,7 +132,7 @@
                         <button type="submit" class="btn btn-primary">
                             עדכן אירוע
                         </button>
-                        <a href="{{ route('calendars.show', $calendar) }}" class="btn btn-secondary">
+                        <a href="{{ route('calendars.show', $calendar) }}" class="btn btn-outline">
                             ביטול
                         </a>
                     </div>

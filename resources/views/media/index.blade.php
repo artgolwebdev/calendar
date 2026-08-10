@@ -2,13 +2,13 @@
     <div class="py-8">
         <div class="container" x-data="mediaLibrary()">
             @if (session('success'))
-                <div class="mb-4 p-4 rounded-xl bg-volt/15 border border-volt text-ink-900 text-sm font-semibold">
+                <div class="alert alert-success mb-4">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-4 p-4 rounded-xl bg-danger-light border border-danger/30 text-danger text-sm font-semibold">
+                <div class="alert alert-error mb-4">
                     {{ session('error') }}
                 </div>
             @endif
@@ -71,8 +71,8 @@
                             </a>
                         </div>
 
-                        {{-- Custom folders --}}
-                        @foreach ($folders->whereNull('family_member_id') as $folder)
+                        {{-- Manual folders --}}
+                        @foreach ($folders->whereNull('calendar_id') as $folder)
                             <div x-data="{ editing: false, over: false }" class="rounded-lg">
                                 <template x-if="editing">
                                     <form action="{{ route('folders.update', $folder) }}" method="POST" class="flex gap-2 p-1">
@@ -125,31 +125,41 @@
                         @endforeach
 
                         @php
-                            $memberFolders = $folders->whereNotNull('family_member_id');
+                            $calendarRoots = $folders->filter(fn ($folder) => $folder->isCalendarRoot());
                         @endphp
 
-                        @if ($memberFolders->isNotEmpty())
-                            <p class="pt-3 pb-1 text-xs font-bold text-ink-400">תיקיות חברי משפחה</p>
+                        @foreach ($calendarRoots as $root)
+                            @php
+                                $memberFolders = $folders->where('parent_id', $root->id);
+                            @endphp
+                            <div class="pt-3">
+                                <p class="pb-1 text-xs font-bold text-ink-400 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{ $root->name }}
+                                </p>
 
-                            @foreach ($memberFolders as $folder)
-                                <div x-data="{ over: false }" @dragenter="over = true" @dragleave="over = false"
-                                    @drop.prevent="over = false; onFolderDrop({{ $folder->id }})"
-                                    :class="over ? 'ring-2 ring-volt' : ''"
-                                    class="flex items-center justify-between gap-1 rounded-lg px-2 py-2 text-sm transition-colors
-                                    {{ $currentFolder?->id === $folder->id ? 'bg-ink-100 text-ink-900 font-semibold' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900' }}">
-                                    <a href="{{ route('media.index', ['folder' => $folder->id]) }}"
-                                        class="flex items-center gap-2 flex-1 min-w-0">
-                                        <span class="shrink-0 {{ $currentFolder?->id === $folder->id ? 'text-ink-900' : 'text-ink-400' }}">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h3l2 2h7a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-                                            </svg>
-                                        </span>
-                                        <span class="truncate">{{ $folder->name }}</span>
-                                    </a>
-                                    <span class="chip bg-volt/20 text-ink-900 shrink-0">חבר משפחה</span>
-                                </div>
-                            @endforeach
-                        @endif
+                                @foreach ($memberFolders as $folder)
+                                    <div x-data="{ over: false }" @dragenter="over = true" @dragleave="over = false"
+                                        @drop.prevent="over = false; onFolderDrop({{ $folder->id }})"
+                                        :class="over ? 'ring-2 ring-volt' : ''"
+                                        class="ms-3 flex items-center justify-between gap-1 rounded-lg px-2 py-2 text-sm transition-colors
+                                        {{ $currentFolder?->id === $folder->id ? 'bg-ink-100 text-ink-900 font-semibold' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900' }}">
+                                        <a href="{{ route('media.index', ['folder' => $folder->id]) }}"
+                                            class="flex items-center gap-2 flex-1 min-w-0">
+                                            <span class="shrink-0 {{ $currentFolder?->id === $folder->id ? 'text-ink-900' : 'text-ink-400' }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h3l2 2h7a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+                                                </svg>
+                                            </span>
+                                            <span class="truncate">{{ $folder->name }}</span>
+                                        </a>
+                                        <span class="chip bg-volt/20 text-ink-900 shrink-0">חבר משפחה</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
                     </nav>
                 </aside>
 

@@ -9,11 +9,10 @@ use App\Http\Controllers\FolderController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MonthPageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', WelcomeController::class);
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
@@ -40,10 +39,13 @@ Route::middleware('auth')->group(function () {
             'names' => 'calendar-events',
             'parameters' => ['events' => 'calendarEvent'],
         ]);
-    });
 
-    // Family member routes
-    Route::resource('family-members', FamilyMemberController::class);
+        // Family member routes (nested under calendars)
+        Route::resource('members', FamilyMemberController::class, [
+            'names' => 'family-members',
+            'parameters' => ['members' => 'familyMember'],
+        ]);
+    });
 
     // Media library routes
     Route::get('/media', [MediaController::class, 'index'])->name('media.index');

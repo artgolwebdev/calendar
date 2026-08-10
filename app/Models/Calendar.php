@@ -34,6 +34,16 @@ class Calendar extends Model
         return $this->hasMany(MonthPage::class);
     }
 
+    public function familyMembers(): HasMany
+    {
+        return $this->hasMany(FamilyMember::class);
+    }
+
+    public function folders(): HasMany
+    {
+        return $this->hasMany(Folder::class);
+    }
+
     protected static function boot()
     {
         parent::boot();

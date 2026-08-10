@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-5">
-        <h2 class="text-xl font-semibold text-[#1A1A1E]">התחברות למערכת</h2>
-        <p class="text-xs text-[#6B6B75] mt-1">הזן את פרטי החשבון שלך כדי להיכנס</p>
+        <h2 class="text-xl font-semibold text-ink-900">התחברות למערכת</h2>
+        <p class="text-xs text-ink-500 mt-1">הזן את פרטי החשבון שלך כדי להיכנס</p>
     </div>
 
     <!-- Session Status -->
@@ -22,7 +22,7 @@
             <div class="flex items-center justify-between mb-1">
                 <label for="password" class="label !mb-0">סיסמה</label>
                 @if (Route::has('password.request'))
-                    <a class="text-xs font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors" href="{{ route('password.request') }}">
+                    <a class="text-xs font-medium text-ink-500 hover:text-ink-900 transition-colors" href="{{ route('password.request') }}">
                         שכחת סיסמה?
                     </a>
                 @endif
@@ -39,8 +39,8 @@
         <!-- Remember Me -->
         <div class="flex items-center">
             <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
-                <input id="remember_me" type="checkbox" class="rounded border-[#E5E5E8] text-[#4F46E5] focus:ring-[#4F46E5]" name="remember">
-                <span class="text-xs font-medium text-[#6B6B75]">זכור אותי במכשיר זה</span>
+                <input id="remember_me" type="checkbox" class="rounded border-ink-200 text-ink-950 focus:ring-ink-950" name="remember">
+                <span class="text-xs font-medium text-ink-500">זכור אותי במכשיר זה</span>
             </label>
         </div>
 
@@ -50,9 +50,9 @@
             </button>
         </div>
 
-        <div class="mt-6 pt-4 border-t border-[#E5E5E8] text-center text-xs text-[#6B6B75]">
+        <div class="mt-6 pt-4 border-t border-ink-200 text-center text-xs text-ink-500">
             עדיין אין לך חשבון? 
-            <a href="{{ route('register') }}" class="font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors">
+            <a href="{{ route('register') }}" class="font-medium text-ink-500 hover:text-ink-900 transition-colors">
                 הרשם עכשיו
             </a>
         </div>

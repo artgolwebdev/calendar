@@ -12,26 +12,24 @@ class FamilyEventGeneratorService
 {
     /**
      * Create or update a single canonical auto-generated event per date-type
-     * for the member on every calendar of the member's user.
+     * for the member on the calendar the member belongs to.
      */
     public function syncForMember(FamilyMember $member): void
     {
-        foreach ($member->user->calendars as $calendar) {
-            $this->syncDateType($calendar, $member, 'birthday');
+        $this->syncDateType($member->calendar, $member, 'birthday');
 
-            if ($member->anniversary_date) {
-                $this->syncDateType($calendar, $member, 'anniversary');
-            }
+        if ($member->anniversary_date) {
+            $this->syncDateType($member->calendar, $member, 'anniversary');
         }
     }
 
     /**
-     * Create or update auto-generated events for all family members of the
-     * calendar's owner on a single calendar.
+     * Create or update auto-generated events for all family members of a
+     * single calendar.
      */
     public function syncForCalendar(Calendar $calendar): void
     {
-        foreach ($calendar->user->familyMembers as $member) {
+        foreach ($calendar->familyMembers as $member) {
             $this->syncDateType($calendar, $member, 'birthday');
 
             if ($member->anniversary_date) {

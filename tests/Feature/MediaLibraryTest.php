@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Folder;
 use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -304,7 +305,7 @@ class MediaLibraryTest extends TestCase
     public function test_upload_view_renders_dropzone_and_folder_selector(): void
     {
         $user = User::factory()->create();
-        $user->folders()->create(['name' => 'חופשה']);
+        Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
 
         $response = $this->actingAs($user)->get('/media/upload');
 

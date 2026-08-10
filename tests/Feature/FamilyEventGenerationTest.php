@@ -30,13 +30,13 @@ class FamilyEventGenerationTest extends TestCase
         return $calendar;
     }
 
-    public function test_creating_family_member_generates_auto_events_on_all_calendars(): void
+    public function test_creating_family_member_generates_auto_events_on_its_own_calendar_only(): void
     {
         $user = User::factory()->create();
-        $this->createCalendarFor($user);
-        $this->createCalendarFor($user);
+        $calendar = $this->createCalendarFor($user);
+        $otherCalendar = $this->createCalendarFor($user);
 
-        $response = $this->actingAs($user)->post('/family-members', [
+        $response = $this->actingAs($user)->post("/calendars/{$calendar->id}/members", [
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',
@@ -45,26 +45,36 @@ class FamilyEventGenerationTest extends TestCase
         $response->assertRedirect();
 
         $member = FamilyMember::first();
-        $this->assertCount(4, CalendarEvent::where('family_member_id', $member->id)->get());
+        $this->assertCount(2, CalendarEvent::where('family_member_id', $member->id)->get());
 
-        foreach ($user->calendars as $calendar) {
-            $birthday = CalendarEvent::where('calendar_id', $calendar->id)
+        foreach ([$calendar, $otherCalendar] as $userCalendar) {
+            $birthday = CalendarEvent::where('calendar_id', $userCalendar->id)
                 ->where('family_member_id', $member->id)
                 ->where('event_type', 'birthday')
                 ->first();
-            $this->assertNotNull($birthday);
-            $this->assertTrue((bool) $birthday->is_auto_generated);
-            $this->assertSame('1998-05-14', $birthday->event_date->format('Y-m-d'));
-            $this->assertSame('יום הולדת - דני', $birthday->title);
 
-            $anniversary = CalendarEvent::where('calendar_id', $calendar->id)
+            if ($userCalendar->is($calendar)) {
+                $this->assertNotNull($birthday);
+                $this->assertTrue((bool) $birthday->is_auto_generated);
+                $this->assertSame('1998-05-14', $birthday->event_date->format('Y-m-d'));
+                $this->assertSame('יום הולדת - דני', $birthday->title);
+            } else {
+                $this->assertNull($birthday);
+            }
+
+            $anniversary = CalendarEvent::where('calendar_id', $userCalendar->id)
                 ->where('family_member_id', $member->id)
                 ->where('event_type', 'anniversary')
                 ->first();
-            $this->assertNotNull($anniversary);
-            $this->assertTrue((bool) $anniversary->is_auto_generated);
-            $this->assertSame('2021-09-03', $anniversary->event_date->format('Y-m-d'));
-            $this->assertSame('יום נישואין - דני', $anniversary->title);
+
+            if ($userCalendar->is($calendar)) {
+                $this->assertNotNull($anniversary);
+                $this->assertTrue((bool) $anniversary->is_auto_generated);
+                $this->assertSame('2021-09-03', $anniversary->event_date->format('Y-m-d'));
+                $this->assertSame('יום נישואין - דני', $anniversary->title);
+            } else {
+                $this->assertNull($anniversary);
+            }
         }
     }
 
@@ -73,7 +83,7 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $this->actingAs($user)->post('/family-members', [
+        $this->actingAs($user)->post("/calendars/{$calendar->id}/members", [
             'name' => 'מאיה',
             'birth_date' => '2000-01-01',
         ]);
@@ -86,11 +96,12 @@ class FamilyEventGenerationTest extends TestCase
         ]);
     }
 
-    public function test_creating_calendar_after_members_syncs_auto_events_to_the_new_calendar(): void
+    public function test_creating_calendar_after_members_does_not_copy_auto_events_to_the_new_calendar(): void
     {
         $user = User::factory()->create();
+        $calendar = $this->createCalendarFor($user);
 
-        $member = $user->familyMembers()->create([
+        $member = $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',
@@ -100,44 +111,27 @@ class FamilyEventGenerationTest extends TestCase
             'name' => 'לוח חדש',
         ])->assertRedirect();
 
-        $calendar = $user->calendars()->first();
-
-        $birthday = CalendarEvent::where('calendar_id', $calendar->id)
-            ->where('family_member_id', $member->id)
-            ->where('event_type', 'birthday')
-            ->first();
-        $this->assertNotNull($birthday);
-        $this->assertTrue((bool) $birthday->is_auto_generated);
-        $this->assertSame('1998-05-14', $birthday->event_date->format('Y-m-d'));
-        $this->assertSame('יום הולדת - דני', $birthday->title);
-
-        $anniversary = CalendarEvent::where('calendar_id', $calendar->id)
-            ->where('family_member_id', $member->id)
-            ->where('event_type', 'anniversary')
-            ->first();
-        $this->assertNotNull($anniversary);
-        $this->assertTrue((bool) $anniversary->is_auto_generated);
-        $this->assertSame('2021-09-03', $anniversary->event_date->format('Y-m-d'));
-        $this->assertSame('יום נישואין - דני', $anniversary->title);
+        $newCalendar = $user->calendars()->whereKeyNot($calendar->id)->firstOrFail();
+        $this->assertSame(0, $newCalendar->calendarEvents()->where('family_member_id', $member->id)->count());
+        $this->assertSame(2, $calendar->calendarEvents()->where('family_member_id', $member->id)->count());
     }
 
     public function test_updating_member_syncs_auto_event_date_and_title_without_duplicates(): void
     {
         $user = User::factory()->create();
-        $this->createCalendarFor($user);
+        $calendar = $this->createCalendarFor($user);
 
-        $member = $user->familyMembers()->create([
+        $member = $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
         ]);
 
-        $this->actingAs($user)->put("/family-members/{$member->id}", [
+        $this->actingAs($user)->put("/calendars/{$calendar->id}/members/{$member->id}", [
             'name' => 'דניאל',
             'birth_date' => '1997-06-20',
             'anniversary_date' => '2021-09-03',
         ]);
 
-        $calendar = $user->calendars->first();
         $birthday = CalendarEvent::where('calendar_id', $calendar->id)
             ->where('family_member_id', $member->id)
             ->where('event_type', 'birthday')
@@ -165,13 +159,13 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $member = $user->familyMembers()->create([
+        $member = $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',
         ]);
 
-        $this->actingAs($user)->delete("/family-members/{$member->id}");
+        $this->actingAs($user)->delete("/calendars/{$calendar->id}/members/{$member->id}");
 
         $this->assertSame(0, CalendarEvent::where('family_member_id', $member->id)->count());
         $this->assertSame(0, $calendar->calendarEvents()->where('is_auto_generated', true)->count());
@@ -184,7 +178,7 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $user->familyMembers()->create([
+        $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',
@@ -206,7 +200,7 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $user->familyMembers()->create([
+        $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
         ]);
@@ -223,7 +217,7 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $user->familyMembers()->create([
+        $calendar->familyMembers()->create([
             'name' => 'יובל',
             'birth_date' => '2000-02-29',
         ]);
@@ -242,7 +236,7 @@ class FamilyEventGenerationTest extends TestCase
         $user = User::factory()->create();
         $calendar = $this->createCalendarFor($user);
 
-        $user->familyMembers()->create([
+        $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',

@@ -12,15 +12,14 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_navigation_links_to_family_members(): void
+    public function test_dashboard_side_menu_no_longer_links_to_family_members(): void
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee(route('family-members.index'));
-        $response->assertSee('חברי משפחה');
+        $response->assertDontSee('חברי משפחה');
         $response->assertDontSee('לוח השנה שלי');
         $response->assertDontSee('נהל וצפה בלוחות השנה המשפחתיים שלך');
     }
@@ -36,7 +35,6 @@ class DashboardTest extends TestCase
             'פרופיל',
             route('calendars.create'),
             'לוח שנה חדש',
-            'חברי משפחה',
             'הספרייה שלי',
         ]);
     }

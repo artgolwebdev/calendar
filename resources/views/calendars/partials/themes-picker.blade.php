@@ -101,11 +101,11 @@
         </p>
         <div class="mt-3 flex gap-2">
             <button type="button" @click="cancelTheme()" :disabled="applying"
-                class="btn btn-secondary flex-1 font-bold">
+                class="btn btn-outline flex-1 font-bold">
                 בטל
             </button>
             <button type="button" id="applyThemeBtn" @click="applyTheme(pendingTheme)" :disabled="applying"
-                class="flex-1 btn bg-ink-950 text-white font-bold hover:bg-ink-800">
+                class="btn btn-primary flex-1 font-bold">
                 <span x-show="applying" x-cloak>מיישם...</span>
                 <span x-show="!applying" x-cloak>החל נושא</span>
             </button>

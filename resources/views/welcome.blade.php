@@ -10,151 +10,33 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        <!-- Design System Styles -->
-        <style>
-            :root {
-                /* Colors */
-                --color-bg: #FAF8F3;
-                --color-text-primary: #2B2E3A;
-                --color-text-secondary: #8A8578;
-                --color-accent: #3F6B4F;
-                --color-accent-hover: #355A42;
-                --color-white: #FFFFFF;
-                --color-border: #E8E6E1;
-                
-                /* Typography */
-                --font-display: 'Frank Ruhl Libre', serif;
-                --font-body: 'Heebo', sans-serif;
-                
-                /* Type Scale */
-                --text-xs: 0.8125rem;
-                --text-sm: 0.875rem;
-                --text-base: 1rem;
-                --text-lg: 1.125rem;
-                --text-xl: 1.25rem;
-                --text-2xl: 1.5rem;
-                --text-3xl: 2rem;
-                --text-4xl: 2.5rem;
-                
-                /* Spacing Scale */
-                --space-1: 0.25rem;
-                --space-2: 0.5rem;
-                --space-3: 0.75rem;
-                --space-4: 1rem;
-                --space-6: 1.5rem;
-                --space-8: 2rem;
-                --space-12: 3rem;
-                
-                /* Border Radius */
-                --radius-sm: 0.375rem;
-                --radius-md: 0.5rem;
-                --radius-lg: 0.75rem;
-                
-                /* Shadows */
-                --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            }
-            
-            body {
-                font-family: var(--font-body);
-                background-color: var(--color-bg);
-                color: var(--color-text-primary);
-                line-height: 1.7;
-                letter-spacing: 0.01em;
-            }
-            
-            h1, h2, h3, h4, h5, h6 {
-                font-family: var(--font-display);
-                font-weight: 500;
-                line-height: 1.3;
-                color: var(--color-text-primary);
-            }
-            
-            .text-display { font-family: var(--font-display); }
-            .text-body { font-family: var(--font-body); }
-            
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 var(--space-4);
-            }
-            
-            @media (min-width: 640px) {
-                .container { padding: 0 var(--space-6); }
-            }
-            
-            @media (min-width: 1024px) {
-                .container { padding: 0 var(--space-8); }
-            }
-            
-            .card {
-                background-color: var(--color-white);
-                border-radius: var(--radius-lg);
-                box-shadow: var(--shadow-md);
-                border: 1px solid var(--color-border);
-            }
-            
-            .btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                padding: var(--space-3) var(--space-6);
-                border-radius: var(--radius-md);
-                font-weight: 500;
-                font-size: var(--text-sm);
-                transition: all 0.2s ease;
-                cursor: pointer;
-                border: none;
-                font-family: var(--font-body);
-            }
-            
-            .btn-primary {
-                background-color: var(--color-accent);
-                color: var(--color-white);
-            }
-            
-            .btn-primary:hover {
-                background-color: var(--color-accent-hover);
-            }
-            
-            .btn-secondary {
-                background-color: var(--color-white);
-                color: var(--color-text-primary);
-                border: 1px solid var(--color-border);
-            }
-            
-            .btn-secondary:hover {
-                background-color: var(--color-bg);
-            }
-        </style>
-
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased">
+    <body class="bg-ink-50 font-sans antialiased text-ink-900">
         <div class="min-h-screen flex flex-col">
             <!-- Navigation -->
-            <nav class="bg-white border-b" style="border-color: var(--color-border);">
-                <div class="container">
-                    <div class="flex justify-between h-16">
-                        <div class="flex items-center">
-                            <a href="/" class="text-display text-xl font-bold" style="color: var(--color-accent);">
-                                לוח שנה משפחתי
-                            </a>
-                        </div>
-                        <div class="flex items-center space-x-4 space-x-reverse">
+            <nav class="bg-white border-b border-ink-200">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <a href="/" class="flex items-center gap-2 font-bold text-ink-950">
+                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-ink-950 text-volt">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                                    <path d="M16 2v4M8 2v4M3 10h18" />
+                                </svg>
+                            </span>
+                            לוח שנה משפחתי
+                        </a>
+                        <div class="flex items-center gap-3">
                             @auth
-                                <a href="{{ route('dashboard') }}" class="text-sm font-medium transition-colors" style="color: var(--color-text-secondary); hover: color: var(--color-text-primary);">
+                                <a href="{{ route('dashboard') }}" class="btn btn-primary btn-sm">
                                     לוח בקרה
                                 </a>
                             @else
-                                <a href="{{ route('login') }}" class="text-sm font-medium transition-colors" style="color: var(--color-text-secondary); hover: color: var(--color-text-primary);">
-                                    התחברות
-                                </a>
-                                <a href="{{ route('register') }}" class="btn btn-primary">
+                                <a href="{{ route('login') }}" class="link">התחברות</a>
+                                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">
                                     הרשמה
                                 </a>
                             @endauth
@@ -163,32 +45,108 @@
                 </div>
             </nav>
 
-            <!-- Hero Section -->
-            <main class="flex-grow flex items-center justify-center py-12">
-                <div class="container text-center">
-                    <h1 class="text-display text-4xl sm:text-5xl font-bold mb-6" style="color: var(--color-text-primary);">
-                        לוח שנה משפחתי בעברית
-                    </h1>
-                    <p class="text-body text-lg mb-8 max-w-2xl mx-auto" style="color: var(--color-text-secondary); line-height: 1.8;">
-                        נהל את לוח השנה המשפחתי שלך, עקוב אחר ימי הולדת, ימי נישואין וחגים ישראליים - הכל במקום אחד
-                    </p>
-                    @guest
-                        <div class="flex justify-center space-x-4 space-x-reverse">
-                            <a href="{{ route('register') }}" class="btn btn-primary" style="padding: var(--space-3) var(--space-8); font-size: var(--text-base);">
-                                צור חשבון
-                            </a>
-                            <a href="{{ route('login') }}" class="btn btn-secondary" style="padding: var(--space-3) var(--space-8); font-size: var(--text-base);">
-                                התחברות
-                            </a>
+            <!-- Hero -->
+            <main class="flex-grow py-12 sm:py-16">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-10">
+                        <h1 class="page-title text-3xl sm:text-4xl font-bold mb-3">
+                            לוח שנה משפחתי בעברית
+                        </h1>
+                        <p class="page-subtitle max-w-xl mx-auto">
+                            ימי הולדת, ימי נישואין וחגים ישראליים — הכל במקום אחד
+                        </p>
+                        @guest
+                            <div class="flex justify-center gap-3 mt-6">
+                                <a href="{{ route('register') }}" class="btn btn-primary btn-lg">
+                                    צור חשבון
+                                </a>
+                                <a href="{{ route('login') }}" class="btn btn-outline btn-lg">
+                                    התחברות
+                                </a>
+                            </div>
+                        @endauth
+                    </div>
+
+                    {{-- Public holidays-only month preview --}}
+                    <div class="card p-4 sm:p-6 max-w-4xl mx-auto">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="section-title">
+                                {{ $monthNames[$month] }} {{ $year }}
+                            </h2>
+                            <span class="text-sm font-medium text-ink-500">
+                                · {{ $hebrewMonthName }} {{ $hebrewYear }}
+                            </span>
                         </div>
-                    @endguest
+
+                        <div dir="ltr">
+                            <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-4">
+                                @foreach (['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'] as $day)
+                                    <div class="text-center text-sm font-medium text-ink-500">{{ $day }}</div>
+                                @endforeach
+                            </div>
+
+                            @php
+                                $firstDayOfMonth = \Carbon\Carbon::create($year, $month, 1);
+                                $lastDayOfMonth = $firstDayOfMonth->copy()->endOfMonth();
+                                $startDayOfWeek = $firstDayOfMonth->dayOfWeek;
+                                $totalDays = $lastDayOfMonth->day;
+                                $today = \Carbon\Carbon::today();
+                                $hebrewDateService = app(\App\Services\HebrewDateService::class);
+                            @endphp
+
+                            <div class="grid grid-cols-7 gap-1.5 sm:gap-2">
+                                @for ($i = 0; $i < 42; $i++)
+                                    @php
+                                        $dayNumber = $i - $startDayOfWeek + 1;
+                                        $isCurrentMonth = $dayNumber >= 1 && $dayNumber <= $totalDays;
+                                        $isToday = false;
+                                        $hebrewDate = '';
+                                        $dayHolidays = [];
+
+                                        if ($isCurrentMonth) {
+                                            $currentDate = \Carbon\Carbon::create($year, $month, $dayNumber);
+                                            $isToday = $currentDate->isSameDay($today);
+                                            $hebrewDate = $hebrewDateService->toHebrewDayMonthString($currentDate);
+                                            $dateKey = $currentDate->format('Y-m-d');
+                                            $dayHolidays = $holidaysByDate[$dateKey] ?? [];
+                                        }
+                                    @endphp
+
+                                    @if ($isCurrentMonth)
+                                        <div class="rounded-lg border p-1.5 sm:p-2 min-h-16 sm:min-h-20 {{ $isToday ? 'bg-ink-950 border-ink-950' : 'bg-white border-ink-200' }}">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <span class="text-lg font-bold {{ $isToday ? 'text-volt' : 'text-ink-900' }}">{{ $dayNumber }}</span>
+                                                @if ($isToday)
+                                                    <span class="text-xs font-medium text-volt">היום</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-xs mb-2 text-ink-500">
+                                                {{ $hebrewDate }}
+                                            </div>
+                                            @if (!empty($dayHolidays))
+                                                <div class="space-y-1">
+                                                    @foreach ($dayHolidays as $holiday)
+                                                        <div class="chip chip-holiday text-xs truncate" title="{{ $holiday['title'] ?? $holiday['hebrew'] ?? 'חג' }}">
+                                                            {{ $holiday['title'] ?? $holiday['hebrew'] ?? 'חג' }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="min-h-16 sm:min-h-20 rounded-lg"></div>
+                                    @endif
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
 
             <!-- Footer -->
-            <footer class="bg-white border-t py-6" style="border-color: var(--color-border);">
-                <div class="container">
-                    <p class="text-center text-sm" style="color: var(--color-text-secondary);">
+            <footer class="bg-white border-t border-ink-200 py-6">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <p class="text-center text-sm text-ink-500">
                         © {{ date('Y') }} לוח שנה משפחתי. כל הזכויות שמורות.
                     </p>
                 </div>

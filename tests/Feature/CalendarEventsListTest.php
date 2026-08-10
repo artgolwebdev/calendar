@@ -17,7 +17,7 @@ class CalendarEventsListTest extends TestCase
     {
         $calendar = $user->calendars()->create(['name' => 'לוח משפחתי']);
 
-        $member = $user->familyMembers()->create([
+        $member = $calendar->familyMembers()->create([
             'name' => 'דני',
             'birth_date' => '1998-05-14',
             'anniversary_date' => '2021-09-03',
@@ -205,7 +205,7 @@ class CalendarEventsListTest extends TestCase
             'title' => 'יום ההולדת החדש של דני',
         ])->assertRedirect(route('calendars.show', $calendar));
 
-        $this->actingAs($user)->put("/family-members/{$member->id}", [
+        $this->actingAs($user)->put("/calendars/{$calendar->id}/members/{$member->id}", [
             'name' => 'דניאל',
             'birth_date' => '1997-06-20',
             'anniversary_date' => '2021-09-03',

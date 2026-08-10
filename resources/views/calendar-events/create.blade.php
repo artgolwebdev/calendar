@@ -18,7 +18,7 @@
             </div>
 
             @if ($errors->any())
-                <div class="mb-6 p-4 rounded-xl bg-danger-light border border-danger/30 text-danger text-sm font-medium">
+                <div class="alert alert-error mb-6">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -82,7 +82,7 @@
                         <label for="family_member_id" class="label">שיוך לחבר משפחה <span class="text-xs text-ink-500 font-normal">(אופציונלי)</span></label>
                         <select name="family_member_id" id="family_member_id" class="input">
                             <option value="">ללא שיוך לחבר משפחה</option>
-                            @foreach ($calendar->user->familyMembers as $member)
+                            @foreach ($calendar->familyMembers as $member)
                                 <option value="{{ $member->id }}" {{ old('family_member_id') == $member->id ? 'selected' : '' }}>
                                     {{ $member->name }}
                                 </option>
@@ -96,7 +96,7 @@
                         <button type="submit" class="btn btn-primary">
                             הוסף אירוע
                         </button>
-                        <a href="{{ route('calendars.show', $calendar) }}" class="btn btn-secondary">
+                        <a href="{{ route('calendars.show', $calendar) }}" class="btn btn-outline">
                             ביטול
                         </a>
                     </div>

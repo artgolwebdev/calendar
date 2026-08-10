@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-5">
-        <h2 class="text-xl font-semibold text-[#1A1A1E]">יצירת חשבון חדש</h2>
-        <p class="text-xs text-[#6B6B75] mt-1">מלא את הפרטים ליצירת חשבון לוח שנה משפחתי</p>
+        <h2 class="text-xl font-semibold text-ink-900">יצירת חשבון חדש</h2>
+        <p class="text-xs text-ink-500 mt-1">מלא את הפרטים ליצירת חשבון לוח שנה משפחתי</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
@@ -46,9 +46,9 @@
             </button>
         </div>
 
-        <div class="mt-6 pt-4 border-t border-[#E5E5E8] text-center text-xs text-[#6B6B75]">
+        <div class="mt-6 pt-4 border-t border-ink-200 text-center text-xs text-ink-500">
             כבר יש לך חשבון? 
-            <a href="{{ route('login') }}" class="font-medium text-[#4F46E5] hover:text-[#4338CA] transition-colors">
+            <a href="{{ route('login') }}" class="font-medium text-ink-500 hover:text-ink-900 transition-colors">
                 התחבר למערכת
             </a>
         </div>

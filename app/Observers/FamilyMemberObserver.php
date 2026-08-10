@@ -16,6 +16,10 @@ class FamilyMemberObserver
 
     public function updated(FamilyMember $familyMember): void
     {
+        if ($familyMember->wasChanged('calendar_id')) {
+            app(FamilyEventGeneratorService::class)->purgeForMember($familyMember);
+        }
+
         app(FamilyEventGeneratorService::class)->syncForMember($familyMember);
         app(FolderSyncService::class)->syncForMember($familyMember);
     }

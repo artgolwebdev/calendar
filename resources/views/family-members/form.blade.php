@@ -6,9 +6,9 @@
     <div class="py-8">
         <div class="container">
             {{-- Header: back link --}}
-            <a href="{{ route('family-members.index') }}"
+            <a href="{{ route('calendars.edit', $calendar) }}"
                 class="inline-flex items-center gap-1.5 mb-4 text-sm font-semibold text-ink-500 hover:text-ink-900 transition-colors">
-                → חזרה לחברי המשפחה
+                → חזרה לעריכת לוח השנה
             </a>
 
             {{-- Header: title + actions --}}
@@ -19,8 +19,8 @@
                     </h1>
                     <p class="mt-1 text-sm text-ink-500">
                         {{ $isCreate
-                            ? 'הזינו את הפרטים, צרפו תמונות ונתחיל לבנות את האירועים המשפחתיים'
-                            : 'עריכת פרטים, אירועים והתמונות של ' . $familyMember->name }}
+                            ? $calendar->name . ' — הזינו את הפרטים, צרפו תמונות ונתחיל לבנות את האירועים המשפחתיים'
+                            : 'עריכת פרטים, אירועים והתמונות של ' . $familyMember->name . ' (' . $calendar->name . ')' }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -32,7 +32,7 @@
                         {{ $isCreate ? 'הוסף חבר משפחה' : 'שמירת שינויים' }}
                     </button>
                     @if (! $isCreate)
-                        <form action="{{ route('family-members.destroy', $familyMember) }}" method="POST" class="inline">
+                        <form action="{{ route('family-members.destroy', [$calendar, $familyMember]) }}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
@@ -46,13 +46,13 @@
             </div>
 
             @if (session('success'))
-                <div class="mb-4 p-4 rounded-xl bg-volt/15 border border-volt text-ink-900 text-sm font-semibold">
+                <div class="alert alert-success mb-4">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-4 p-4 rounded-xl bg-danger-light border border-danger/30 text-danger text-sm font-semibold">
+                <div class="alert alert-error mb-4">
                     {{ session('error') }}
                 </div>
             @endif
@@ -61,7 +61,7 @@
                 {{-- Details sidebar --}}
                 <aside class="lg:sticky lg:top-24">
                     <form id="member-form" method="POST"
-                        action="{{ $isCreate ? route('family-members.store') : route('family-members.update', $familyMember) }}"
+                        action="{{ $isCreate ? route('family-members.store', $calendar) : route('family-members.update', [$calendar, $familyMember]) }}"
                         enctype="multipart/form-data" class="card p-6 space-y-4">
                         @csrf
                         @if (! $isCreate)
@@ -108,8 +108,32 @@
                                 placeholder="הערות נוספות על חבר המשפחה">{{ old('notes', $isCreate ? '' : $familyMember->notes) }}</textarea>
                         </div>
 
+                        <x-tag-input
+                            name="hobbies"
+                            label="תחביבים"
+                            :values="old('hobbies', $isCreate ? [] : ($familyMember->hobbies ?? []))"
+                            placeholder="לדוגמה: שחייה, ציור" />
+
+                        <x-tag-input
+                            name="favorite_sports"
+                            label="ספורט אהוב"
+                            :values="old('favorite_sports', $isCreate ? [] : ($familyMember->favorite_sports ?? []))"
+                            placeholder="לדוגמה: כדורגל, טניס" />
+
+                        <x-tag-input
+                            name="favorite_music"
+                            label="מוזיקה אהובה"
+                            :values="old('favorite_music', $isCreate ? [] : ($familyMember->favorite_music ?? []))"
+                            placeholder="לדוגמה: רוק, פופ" />
+
+                        <x-tag-input
+                            name="favorite_food"
+                            label="אוכל אהוב"
+                            :values="old('favorite_food', $isCreate ? [] : ($familyMember->favorite_food ?? []))"
+                            placeholder="לדוגמה: פיצה, שקשוקה" />
+
                         @if ($errors->any())
-                            <div class="p-4 rounded-xl bg-danger-light border border-danger/30 text-sm text-danger">
+                            <div class="alert alert-error">
                                 <ul class="list-disc list-inside space-y-1">
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>

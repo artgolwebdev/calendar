@@ -55,16 +55,6 @@ class User extends Authenticatable implements HasMedia
                 ->first();
     }
 
-    public function familyMembers(): HasMany
-    {
-        return $this->hasMany(FamilyMember::class);
-    }
-
-    public function folders(): HasMany
-    {
-        return $this->hasMany(Folder::class);
-    }
-
     /**
      * Register the media collection used as the user's personal media library.
      */

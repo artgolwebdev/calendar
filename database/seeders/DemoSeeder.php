@@ -6,7 +6,6 @@ use App\Models\Calendar;
 use App\Models\CalendarEvent;
 use App\Models\FamilyMember;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -26,9 +25,14 @@ class DemoSeeder extends Seeder
             ]
         );
 
-        // Create family members
+        // Create a calendar
+        $calendar = Calendar::firstOrCreate(
+            ['user_id' => $user->id, 'name' => 'לוח שנה משפחתי 2026'],
+        );
+
+        // Create family members scoped to the calendar
         $father = FamilyMember::firstOrCreate(
-            ['user_id' => $user->id, 'name' => 'אבא'],
+            ['calendar_id' => $calendar->id, 'name' => 'אבא'],
             [
                 'birth_date' => '1980-05-15',
                 'anniversary_date' => '2010-06-20',
@@ -37,7 +41,7 @@ class DemoSeeder extends Seeder
         );
 
         $mother = FamilyMember::firstOrCreate(
-            ['user_id' => $user->id, 'name' => 'אמא'],
+            ['calendar_id' => $calendar->id, 'name' => 'אמא'],
             [
                 'birth_date' => '1982-08-22',
                 'anniversary_date' => '2010-06-20',
@@ -46,16 +50,11 @@ class DemoSeeder extends Seeder
         );
 
         $child = FamilyMember::firstOrCreate(
-            ['user_id' => $user->id, 'name' => 'ילד'],
+            ['calendar_id' => $calendar->id, 'name' => 'ילד'],
             [
                 'birth_date' => '2015-03-10',
                 'notes' => 'הילד הראשון',
             ]
-        );
-
-        // Create a calendar
-        $calendar = Calendar::firstOrCreate(
-            ['user_id' => $user->id, 'name' => 'לוח שנה משפחתי 2026'],
         );
 
         // Create 12 month pages for the calendar

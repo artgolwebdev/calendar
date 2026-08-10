@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFamilyMemberRequest;
 use App\Http\Requests\UpdateFamilyMemberRequest;
+use App\Models\Calendar;
 use App\Models\FamilyMember;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class FamilyMemberController extends Controller
@@ -15,21 +15,27 @@ class FamilyMemberController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Calendar $calendar): View
     {
-        $familyMembers = Auth::user()->familyMembers()
+        $this->authorize('update', $calendar);
+
+        $familyMembers = $calendar->familyMembers()
             ->with(['folder' => fn ($query) => $query->withCount('media')])
+            ->orderBy('name')
             ->get();
 
-        return view('family-members.index', compact('familyMembers'));
+        return view('family-members.index', compact('calendar', 'familyMembers'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(Calendar $calendar): View
     {
+        $this->authorize('update', $calendar);
+
         return view('family-members.form', [
+            'calendar' => $calendar,
             'familyMember' => null,
             'folder' => null,
             'media' => collect(),
@@ -39,13 +45,15 @@ class FamilyMemberController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreFamilyMemberRequest $request): RedirectResponse
+    public function store(StoreFamilyMemberRequest $request, Calendar $calendar): RedirectResponse
     {
-        $member = Auth::user()->familyMembers()->create($request->safe()->except(['images']));
+        $this->authorize('update', $calendar);
+
+        $member = $calendar->familyMembers()->create($request->safe()->except(['images']));
 
         $this->storeImages($member, $request->file('images', []));
 
-        return redirect()->route('family-members.show', $member)
+        return redirect()->route('calendars.edit', $calendar)
             ->with('success', 'חבר המשפחה נוסף בהצלחה');
     }
 
@@ -53,28 +61,28 @@ class FamilyMemberController extends Controller
      * Display the specified resource. The member page is a single editable
      * view holding both the details form and the image gallery.
      */
-    public function show(FamilyMember $familyMember): View
+    public function show(Calendar $calendar, FamilyMember $familyMember): View
     {
         $this->authorize('view', $familyMember);
 
-        return $this->memberPage($familyMember);
+        return $this->memberPage($calendar, $familyMember);
     }
 
     /**
      * Show the form for editing the specified resource. Renders the same
      * combined member page used for viewing.
      */
-    public function edit(FamilyMember $familyMember): View
+    public function edit(Calendar $calendar, FamilyMember $familyMember): View
     {
         $this->authorize('update', $familyMember);
 
-        return $this->memberPage($familyMember);
+        return $this->memberPage($calendar, $familyMember);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFamilyMemberRequest $request, FamilyMember $familyMember): RedirectResponse
+    public function update(UpdateFamilyMemberRequest $request, Calendar $calendar, FamilyMember $familyMember): RedirectResponse
     {
         $this->authorize('update', $familyMember);
 
@@ -82,31 +90,31 @@ class FamilyMemberController extends Controller
 
         $this->storeImages($familyMember, $request->file('images', []));
 
-        return redirect()->route('family-members.show', $familyMember)
+        return redirect()->route('calendars.edit', $calendar)
             ->with('success', 'השינויים נשמרו בהצלחה');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(FamilyMember $familyMember): RedirectResponse
+    public function destroy(Calendar $calendar, FamilyMember $familyMember): RedirectResponse
     {
         $this->authorize('delete', $familyMember);
         $familyMember->delete();
 
-        return redirect()->route('family-members.index')
+        return redirect()->route('calendars.edit', $calendar)
             ->with('success', 'חבר המשפחה נמחק בהצלחה');
     }
 
     /**
      * Render the combined member page (details form + gallery + events).
      */
-    private function memberPage(FamilyMember $familyMember): View
+    private function memberPage(Calendar $calendar, FamilyMember $familyMember): View
     {
         $folder = $familyMember->folder()->withCount('media')->first();
         $media = $folder?->media()->orderByDesc('id')->get() ?? collect();
 
-        return view('family-members.form', compact('familyMember', 'folder', 'media'));
+        return view('family-members.form', compact('calendar', 'familyMember', 'folder', 'media'));
     }
 
     /**
@@ -116,7 +124,7 @@ class FamilyMemberController extends Controller
      */
     private function storeImages(FamilyMember $member, array $files): void
     {
-        $user = $member->user;
+        $user = $member->calendar->user;
         $folderId = $member->folder()->first()?->id;
 
         foreach ($files as $file) {

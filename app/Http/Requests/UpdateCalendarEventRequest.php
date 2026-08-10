@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCalendarEventRequest extends FormRequest
 {
@@ -29,7 +30,10 @@ class UpdateCalendarEventRequest extends FormRequest
             'event_type' => 'sometimes|required|in:custom',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after:start_time',
-            'family_member_id' => 'nullable|exists:family_members,id',
+            'family_member_id' => [
+                'nullable',
+                Rule::exists('family_members', 'id')->where('calendar_id', $this->route('calendar')->id),
+            ],
             'cover_image_path' => 'nullable|image|max:51200',
         ];
     }

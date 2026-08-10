@@ -11,11 +11,14 @@ use Illuminate\Support\Facades\Auth;
 class FolderController extends Controller
 {
     /**
-     * Store a newly created folder for the authenticated user.
+     * Store a newly created manual folder for the authenticated user.
      */
     public function store(StoreFolderRequest $request): RedirectResponse
     {
-        Auth::user()->folders()->create($request->validated());
+        Folder::create([
+            'user_id' => Auth::id(),
+            'name' => $request->validated('name'),
+        ]);
 
         return back()->with('success', 'התיקייה נוצרה בהצלחה');
     }

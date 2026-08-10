@@ -17,7 +17,7 @@ class FoldersBackfill extends Command
      */
     public function handle(FolderSyncService $folders): int
     {
-        $members = FamilyMember::with('user')->whereDoesntHave('folder')->get();
+        $members = FamilyMember::with('calendar')->whereDoesntHave('folder')->get();
 
         foreach ($members as $member) {
             $folders->syncForMember($member);

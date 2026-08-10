@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('family_members', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('calendar_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->date('birth_date');
             $table->date('anniversary_date')->nullable();
             $table->text('notes')->nullable();
+            $table->json('hobbies')->nullable();
+            $table->json('favorite_sports')->nullable();
+            $table->json('favorite_music')->nullable();
+            $table->json('favorite_food')->nullable();
             $table->timestamps();
         });
     }

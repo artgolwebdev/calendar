@@ -2,13 +2,13 @@
     <div class="py-8">
         <div class="container" x-data="mediaUpload()" @keydown.escape.window="dragOver = false">
             @if (session('success'))
-                <div class="mb-4 p-4 rounded-xl bg-volt/15 border border-volt text-ink-900 text-sm font-semibold">
+                <div class="alert alert-success mb-4">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-4 p-4 rounded-xl bg-danger-light border border-danger/30 text-danger text-sm font-semibold">
+                <div class="alert alert-error mb-4">
                     {{ session('error') }}
                 </div>
             @endif

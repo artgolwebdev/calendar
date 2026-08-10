@@ -27,14 +27,14 @@
         @keydown.escape.window="settingsOpen = false; themesOpen = false; pendingTheme = null">
         <div class="container">
             @if (session('success'))
-                <div class="mb-4 card p-4" style="background-color: #F0FFF4; border-color: #C6F6D5;">
-                    <p style="color: #276749;">{{ session('success') }}</p>
+                <div class="alert alert-success mb-4">
+                    <p>{{ session('success') }}</p>
                 </div>
             @endif
 
             @if ($errors->any())
-                <div class="mb-4 card p-4" style="background-color: #FFF5F5; border-color: #FEB2B2;">
-                    <ul class="list-disc pr-5" style="color: #C53030;">
+                <div class="alert alert-error mb-4">
+                    <ul class="list-disc pr-5">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -223,7 +223,7 @@
                                             class="day-cell min-h-16 sm:min-h-24 p-1.5 sm:p-2 rounded-lg cursor-pointer transition-colors border block {{ $isToday ? 'day-cell-today' : '' }} {{ !$isCurrentMonth ? 'day-cell-adjacent' : '' }}"
                                             @if ($isCurrentMonth) data-day="{{ $displayDay }}" @endif
                                             @if ($isToday)
-                                                style="background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-white);"
+                                                style="background-color: var(--color-primary); border-color: var(--color-accent); color: var(--color-accent);"
                                             @elseif ($isCurrentMonth)
                                                 style="background-color: {{ $styles['dayBox']['backgroundColor'] }}; border-color: var(--color-border); color: {{ $styles['dayBox']['fontColor'] }};"
                                             @else
@@ -261,7 +261,7 @@
                                                     @endforeach
 
                                                     @if (count($dayHolidays) + count($dayEvents) > 3)
-                                                        <div class="text-xs font-medium" style="color: var(--color-accent);">
+                                                        <div class="text-xs font-medium" style="color: var(--color-primary);">
                                                             +{{ count($dayHolidays) + count($dayEvents) - 3 }} עוד
                                                         </div>
                                                     @endif

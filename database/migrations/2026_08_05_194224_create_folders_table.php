@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('folders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('calendar_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('folders')->cascadeOnDelete();
             $table->string('name');
             $table->foreignId('family_member_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
-
-            $table->unique(['user_id', 'name']);
         });
     }
 

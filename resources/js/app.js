@@ -318,6 +318,44 @@ Alpine.data('monthPage', (options = {}) => ({
     ...createThemePicker(options),
 }));
 
+Alpine.data('tagInput', (options = {}) => ({
+    name: options.name ?? '',
+    values: options.values ?? [],
+    tags: [],
+    draft: '',
+
+    init() {
+        this.tags = Array.from(this.values ?? [])
+            .map((value) => String(value).trim())
+            .filter(Boolean);
+    },
+
+    addDraft() {
+        const parts = String(this.draft || '')
+            .split(',')
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        parts.forEach((part) => {
+            if (!this.tags.includes(part)) {
+                this.tags.push(part);
+            }
+        });
+
+        this.draft = '';
+    },
+
+    removeTag(index) {
+        this.tags.splice(index, 1);
+    },
+
+    onBackspace() {
+        if (this.draft === '' && this.tags.length) {
+            this.removeTag(this.tags.length - 1);
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();

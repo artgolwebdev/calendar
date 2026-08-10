@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\FamilyMember;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class FamilyMemberPolicy
 {
@@ -21,7 +20,7 @@ class FamilyMemberPolicy
      */
     public function view(User $user, FamilyMember $familyMember): bool
     {
-        return $user->id === $familyMember->user_id;
+        return $user->id === $familyMember->calendar->user_id;
     }
 
     /**
@@ -37,7 +36,7 @@ class FamilyMemberPolicy
      */
     public function update(User $user, FamilyMember $familyMember): bool
     {
-        return $user->id === $familyMember->user_id;
+        return $user->id === $familyMember->calendar->user_id;
     }
 
     /**
@@ -45,7 +44,7 @@ class FamilyMemberPolicy
      */
     public function delete(User $user, FamilyMember $familyMember): bool
     {
-        return $user->id === $familyMember->user_id;
+        return $user->id === $familyMember->calendar->user_id;
     }
 
     /**
@@ -53,7 +52,7 @@ class FamilyMemberPolicy
      */
     public function restore(User $user, FamilyMember $familyMember): bool
     {
-        return $user->id === $familyMember->user_id;
+        return $user->id === $familyMember->calendar->user_id;
     }
 
     /**
@@ -61,6 +60,6 @@ class FamilyMemberPolicy
      */
     public function forceDelete(User $user, FamilyMember $familyMember): bool
     {
-        return $user->id === $familyMember->user_id;
+        return $user->id === $familyMember->calendar->user_id;
     }
 }

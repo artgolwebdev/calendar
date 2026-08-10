@@ -2,20 +2,20 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-semibold text-[#1A1A1E]">{{ $calendar->name }}</h1>
-                <p class="text-xs text-[#6B6B75] mt-1">בחר חודש לצפייה ועיצוב הלוח</p>
+                <h1 class="text-2xl font-semibold text-ink-900">{{ $calendar->name }}</h1>
+                <p class="text-xs text-ink-500 mt-1">בחר חודש לצפייה ועיצוב הלוח</p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('calendar-events.index', $calendar) }}" class="btn btn-secondary btn-sm">
+                <a href="{{ route('calendar-events.index', $calendar) }}" class="btn btn-outline btn-sm">
                     כל האירועים
                 </a>
-                <a href="{{ route('calendars.edit', $calendar) }}" class="btn btn-secondary btn-sm">
+                <a href="{{ route('calendars.edit', $calendar) }}" class="btn btn-outline btn-sm">
                     ערוך הגדרות
                 </a>
                 <form action="{{ route('calendars.destroy', $calendar) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-destructive btn-sm"
+                    <button type="submit" class="btn btn-danger btn-sm"
                         onclick="return confirm('האם אתה בטוח שברצונך למחוק את לוח השנה?')">
                         מחק
                     </button>
@@ -32,7 +32,7 @@
         @keydown.escape.window="themesOpen = false; pendingTheme = null">
         <div class="container">
             <div class="mb-6 flex items-center justify-between gap-3">
-                <p class="text-sm text-[#6B6B75]">החל נושא עיצוב אחיד על כל 12 חודשי הלוח</p>
+                <p class="text-sm text-ink-500">החל נושא עיצוב אחיד על כל 12 חודשי הלוח</p>
                 <button type="button" @click="themesOpen = !themesOpen"
                     :class="themesOpen ? 'bg-volt text-ink-950' : 'bg-ink-950 text-volt hover:bg-ink-800'"
                     class="inline-flex items-center gap-2 h-10 px-5 rounded-full font-bold text-sm transition-colors shadow-sm"
@@ -48,7 +48,7 @@
             </div>
 
             @if (session('success'))
-                <div class="mb-6 p-4 rounded-lg bg-[#F0FDF4] border border-[#DCFCE7] text-[#15803D] text-sm font-medium flex items-center justify-between">
+                <div class="alert alert-success mb-6 flex items-center justify-between">
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
@@ -59,8 +59,8 @@
                     <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
                     <div class="relative z-10 text-white">
                         <h2 class="text-2xl font-bold mb-1 text-white">{{ $calendar->name }}</h2>
-                        <p class="text-sm text-gray-200">{{ $year }} · {{ $hebrewYear }}</p>
-                        <p class="text-sm text-gray-200">לחץ על חודש כדי למסגר ולצפות באירועים</p>
+                        <p class="text-sm text-white/80">{{ $year }} · {{ $hebrewYear }}</p>
+                        <p class="text-sm text-white/80">לחץ על חודש כדי למסגר ולצפות באירועים</p>
                     </div>
                 </div>
             @else
@@ -85,7 +85,7 @@
                     @endphp
                     
                     <a href="{{ route('calendars.month', [$calendar, $monthPage->month_number, now()->year]) }}" 
-                        class="card overflow-hidden block group hover:border-[#4F46E5] transition-all">
+                        class="card overflow-hidden block group hover:border-ink-950 transition-all">
                         @if ($hasImage)
                             <div class="relative h-32 overflow-hidden">
                                 <img src="{{ $info['background_image_url'] }}"
@@ -107,11 +107,11 @@
                             @unless ($hasImage)
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
-                                        <h3 class="text-base font-semibold text-[#1A1A1E] group-hover:text-[#4F46E5] transition-colors">
+                                        <h3 class="text-base font-semibold text-ink-900 group-hover:text-ink-950 transition-colors">
                                             {{ $monthNames[$monthPage->month_number] }}
                                         </h3>
                                         @if ($info)
-                                            <p class="text-xs text-[#6B6B75]">{{ $info['hebrew_month'] }}</p>
+                                            <p class="text-xs text-ink-500">{{ $info['hebrew_month'] }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@
 
             <!-- Quick Actions -->
             <div class="mt-6 flex items-center gap-3">
-                <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+                <a href="{{ route('dashboard') }}" class="btn btn-outline">
                     → חזור ללוח הבקרה
                 </a>
             </div>

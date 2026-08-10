@@ -24,35 +24,35 @@
             <div class="relative" dir="ltr">
                 <button type="button" aria-label="ימים מוקדמים יותר"
                     @click="scrollDayStrip('prev')"
-                    class="day-scroller-arrow day-scroller-arrow--prev hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
+                    class="day-scroller-arrow day-scroller-arrow--prev hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-ink-200 shadow-sm items-center justify-center text-ink-500 hover:text-ink-950 hover:border-ink-300 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <button type="button" aria-label="ימים מאוחרים יותר"
                     @click="scrollDayStrip('next')"
-                    class="day-scroller-arrow day-scroller-arrow--next hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-[#E5E5E8] shadow-sm items-center justify-center text-[#6B6B75] hover:text-[#4F46E5] hover:border-[#D4D4D8] transition-colors">
+                    class="day-scroller-arrow day-scroller-arrow--next hidden sm:flex absolute top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white border border-ink-200 shadow-sm items-center justify-center text-ink-500 hover:text-ink-950 hover:border-ink-300 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
 
                 <div x-ref="track"
-                    class="day-scroller-track bg-[#F3F4F6] rounded-xl flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth px-10 py-2.5">
+                    class="day-scroller-track bg-ink-100 rounded-xl flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth px-10 py-2.5">
                     @foreach ($days as $day)
                         <a href="{{ route('calendars.day', [$mainCalendar, $day['date']]) }}"
-                            class="day-scroller-card shrink-0 w-36 sm:w-40 md:w-44 h-44 sm:h-48 md:h-52 lg:h-56 snap-center rounded-lg flex flex-col items-stretch p-3 sm:p-4 transition-colors {{ $day['is_today'] ? 'bg-[#4F46E5] shadow-md shadow-[#4F46E5]/25' : 'bg-white' }}"
+                            class="day-scroller-card shrink-0 w-36 sm:w-40 md:w-44 h-44 sm:h-48 md:h-52 lg:h-56 snap-center rounded-lg flex flex-col items-stretch p-3 sm:p-4 transition-colors {{ $day['is_today'] ? 'bg-ink-950 shadow-md shadow-ink-950/25' : 'bg-white' }}"
                             @if ($day['is_today']) data-day-scroll-target="today" @endif>
                             <div class="flex items-center justify-between gap-1">
-                                <span class="text-sm font-semibold {{ $day['is_today'] ? 'text-white/85' : 'text-[#6B6B75]' }}">{{ $day['weekday'] }}</span>
+                                <span class="text-sm font-semibold {{ $day['is_today'] ? 'text-white/85' : 'text-ink-500' }}">{{ $day['weekday'] }}</span>
                                 @if ($day['is_today'])
                                     <span class="text-xs font-medium text-white">היום</span>
                                 @endif
                             </div>
 
                             <div class="flex flex-col items-center justify-center flex-1 min-h-0">
-                                <span class="text-4xl sm:text-5xl font-bold leading-none {{ $day['is_today'] ? 'text-white' : 'text-[#1A1A1E]' }}">{{ $day['day'] }}</span>
-                                <span class="day-hebrew text-xs sm:text-sm mt-1.5 {{ $day['is_today'] ? 'text-white/75' : 'text-[#6B6B75]' }}">{{ $day['hebrew_date'] }}</span>
+                                <span class="text-4xl sm:text-5xl font-bold leading-none {{ $day['is_today'] ? 'text-white' : 'text-ink-900' }}">{{ $day['day'] }}</span>
+                                <span class="day-hebrew text-xs sm:text-sm mt-1.5 {{ $day['is_today'] ? 'text-white/75' : 'text-ink-500' }}">{{ $day['hebrew_date'] }}</span>
                             </div>
 
                             <div class="flex flex-col gap-1 min-h-14 justify-start mt-2">
@@ -71,7 +71,7 @@
                                 @endforeach
 
                                 @if ($day['total'] > 2)
-                                    <span class="text-xs font-medium text-center {{ $day['is_today'] ? 'text-white/80' : 'text-[#4F46E5]' }}">
+                                    <span class="text-xs font-medium text-center {{ $day['is_today'] ? 'text-white/80' : 'text-ink-900' }}">
                                         +{{ $day['total'] - 2 }} עוד
                                     </span>
                                 @endif

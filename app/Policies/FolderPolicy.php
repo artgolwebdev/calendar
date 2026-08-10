@@ -20,7 +20,7 @@ class FolderPolicy
      */
     public function view(User $user, Folder $folder): bool
     {
-        return $user->id === $folder->user_id;
+        return $this->owns($user, $folder);
     }
 
     /**
@@ -36,7 +36,7 @@ class FolderPolicy
      */
     public function update(User $user, Folder $folder): bool
     {
-        return $user->id === $folder->user_id;
+        return $this->owns($user, $folder);
     }
 
     /**
@@ -44,7 +44,7 @@ class FolderPolicy
      */
     public function delete(User $user, Folder $folder): bool
     {
-        return $user->id === $folder->user_id;
+        return $this->owns($user, $folder);
     }
 
     /**
@@ -52,7 +52,7 @@ class FolderPolicy
      */
     public function restore(User $user, Folder $folder): bool
     {
-        return $user->id === $folder->user_id;
+        return $this->owns($user, $folder);
     }
 
     /**
@@ -60,6 +60,19 @@ class FolderPolicy
      */
     public function forceDelete(User $user, Folder $folder): bool
     {
+        return $this->owns($user, $folder);
+    }
+
+    /**
+     * Auto-generated calendar folders resolve ownership through their
+     * calendar; manual folders through their owner column.
+     */
+    private function owns(User $user, Folder $folder): bool
+    {
+        if ($folder->calendar_id !== null) {
+            return $user->id === $folder->calendar?->user_id;
+        }
+
         return $user->id === $folder->user_id;
     }
 }

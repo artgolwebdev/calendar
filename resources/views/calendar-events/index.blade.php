@@ -18,7 +18,7 @@
                     </p>
                 </div>
                 <a href="{{ route('calendar-events.create', $calendar) }}"
-                    class="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-ink-900 text-volt font-bold text-sm transition-colors hover:bg-ink-800 active:bg-ink-950">
+                    class="btn btn-primary h-11 px-6 rounded-xl">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -27,7 +27,7 @@
             </div>
 
             @if (session('success'))
-                <div class="mb-6 p-4 rounded-lg bg-[#F0FDF4] border border-[#DCFCE7] text-[#15803D] text-sm font-medium">
+                <div class="alert alert-success mb-6">
                     {{ session('success') }}
                 </div>
             @endif
@@ -144,7 +144,7 @@
 
                                 <div class="mt-auto pt-3 mt-4 border-t border-ink-100 flex items-center gap-2">
                                     <a href="{{ route('calendar-events.edit', [$calendar, $event]) }}"
-                                        class="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-white border border-ink-200 text-ink-900 font-semibold text-sm transition-colors hover:bg-ink-50 hover:border-ink-300">
+                                        class="btn btn-outline h-9 px-4">
                                         עריכה
                                     </a>
                                     @if (! $event->is_auto_generated)
@@ -152,7 +152,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                class="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-white border border-danger/40 text-danger font-semibold text-sm transition-colors hover:bg-danger-light"
+                                                class="btn btn-danger h-9 px-4"
                                                 onclick="return confirm('האם אתה בטוח שברצונך למחוק את האירוע?')">
                                                 מחיקה
                                             </button>

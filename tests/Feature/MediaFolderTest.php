@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Calendar;
 use App\Models\FamilyMember;
+use App\Models\Folder;
 use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,6 +16,11 @@ use Tests\TestCase;
 class MediaFolderTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function createCalendarFor(User $user): Calendar
+    {
+        return $user->calendars()->create(['name' => 'לוח משפחתי']);
+    }
 
     /**
      * @param  array<int, string>  $names
@@ -72,8 +79,9 @@ class MediaFolderTest extends TestCase
     public function test_creating_family_member_creates_linked_folder(): void
     {
         $user = User::factory()->create();
+        $calendar = $this->createCalendarFor($user);
 
-        $this->actingAs($user)->post('/family-members', [
+        $this->actingAs($user)->post("/calendars/{$calendar->id}/members", [
             'name' => 'דני',
             'birth_date' => '1998-05-14',
         ]);
@@ -82,6 +90,7 @@ class MediaFolderTest extends TestCase
 
         $this->assertDatabaseHas('folders', [
             'user_id' => $user->id,
+            'calendar_id' => $calendar->id,
             'name' => 'דני',
             'family_member_id' => $member->id,
         ]);
@@ -90,9 +99,10 @@ class MediaFolderTest extends TestCase
     public function test_renaming_family_member_renames_linked_folder(): void
     {
         $user = User::factory()->create();
-        $member = $user->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
+        $calendar = $this->createCalendarFor($user);
+        $member = $calendar->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
 
-        $this->actingAs($user)->put("/family-members/{$member->id}", ['name' => 'דניאל']);
+        $this->actingAs($user)->put("/calendars/{$calendar->id}/members/{$member->id}", ['name' => 'דניאל']);
 
         $this->assertDatabaseHas('folders', [
             'id' => $member->folder()->first()->id,
@@ -103,13 +113,14 @@ class MediaFolderTest extends TestCase
     public function test_deleting_family_member_deletes_linked_folder_and_unfiles_media(): void
     {
         [$user, $media] = $this->createUserWithMedia();
-        $member = $user->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
+        $calendar = $this->createCalendarFor($user);
+        $member = $calendar->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
         $folder = $member->folder()->first();
         $item = $media->first();
         $item->folder_id = $folder->id;
         $item->save();
 
-        $this->actingAs($user)->delete("/family-members/{$member->id}");
+        $this->actingAs($user)->delete("/calendars/{$calendar->id}/members/{$member->id}");
 
         $this->assertDatabaseMissing('folders', ['id' => $folder->id]);
         $this->assertDatabaseHas('media', ['id' => $item->id, 'folder_id' => null]);
@@ -118,7 +129,7 @@ class MediaFolderTest extends TestCase
     public function test_user_can_move_media_into_folder(): void
     {
         [$user, $media] = $this->createUserWithMedia();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
         $item = $media->first();
 
         $response = $this->actingAs($user)->put("/media/{$item->id}/folder", ['folder_id' => $folder->id]);
@@ -132,7 +143,7 @@ class MediaFolderTest extends TestCase
     public function test_user_can_move_media_back_to_all_media(): void
     {
         [$user, $media] = $this->createUserWithMedia();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
         $item = $media->first();
         $item->folder_id = $folder->id;
         $item->save();
@@ -155,7 +166,7 @@ class MediaFolderTest extends TestCase
     public function test_user_cannot_move_media_into_another_users_folder(): void
     {
         [$owner] = $this->createUserWithMedia();
-        $folder = $owner->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $owner->id, 'name' => 'חופשה']);
         [$otherUser, $otherMedia] = $this->createUserWithMedia(['other.jpg']);
 
         $this->actingAs($otherUser)
@@ -168,7 +179,7 @@ class MediaFolderTest extends TestCase
     public function test_user_can_rename_manual_folder(): void
     {
         $user = User::factory()->create();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
 
         $this->actingAs($user)->put("/folders/{$folder->id}", ['name' => 'טיולים']);
 
@@ -178,7 +189,8 @@ class MediaFolderTest extends TestCase
     public function test_member_linked_folder_cannot_be_renamed_manually(): void
     {
         $user = User::factory()->create();
-        $member = $user->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
+        $calendar = $this->createCalendarFor($user);
+        $member = $calendar->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
         $folder = $member->folder()->first();
 
         $response = $this->actingAs($user)
@@ -192,7 +204,7 @@ class MediaFolderTest extends TestCase
     public function test_deleting_manual_folder_unfiles_media(): void
     {
         [$user, $media] = $this->createUserWithMedia();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
         $item = $media->first();
         $item->folder_id = $folder->id;
         $item->save();
@@ -206,7 +218,7 @@ class MediaFolderTest extends TestCase
     public function test_user_cannot_delete_another_users_folder(): void
     {
         $user = User::factory()->create();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
         $otherUser = User::factory()->create();
 
         $this->actingAs($otherUser)->delete("/folders/{$folder->id}")->assertForbidden();
@@ -217,7 +229,8 @@ class MediaFolderTest extends TestCase
     public function test_member_linked_folder_cannot_be_deleted_manually(): void
     {
         $user = User::factory()->create();
-        $member = $user->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
+        $calendar = $this->createCalendarFor($user);
+        $member = $calendar->familyMembers()->create(['name' => 'דני', 'birth_date' => '1998-05-14']);
         $folder = $member->folder()->first();
 
         $response = $this->actingAs($user)->delete("/folders/{$folder->id}");
@@ -230,7 +243,7 @@ class MediaFolderTest extends TestCase
     public function test_media_index_filters_by_folder(): void
     {
         [$user, $media] = $this->createUserWithMedia(['family.jpg', 'dog.png']);
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
         $media[0]->folder_id = $folder->id;
         $media[0]->save();
 
@@ -244,7 +257,7 @@ class MediaFolderTest extends TestCase
     public function test_media_index_does_not_leak_another_users_folder(): void
     {
         [$owner, $media] = $this->createUserWithMedia();
-        $folder = $owner->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $owner->id, 'name' => 'חופשה']);
         $otherUser = User::factory()->create();
 
         $response = $this->actingAs($otherUser)->get("/media?folder={$folder->id}");
@@ -258,7 +271,7 @@ class MediaFolderTest extends TestCase
     {
         Storage::fake('public');
         $user = User::factory()->create();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
 
         $this->actingAs($user)->post('/media', [
             'files' => [UploadedFile::fake()->image('trip.jpg')],
@@ -275,7 +288,7 @@ class MediaFolderTest extends TestCase
     {
         Storage::fake('public');
         $user = User::factory()->create();
-        $folder = $user->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $user->id, 'name' => 'חופשה']);
 
         $this->actingAs($user)->post('/media?folder='.$folder->id, [
             'files' => [UploadedFile::fake()->image('trip.jpg')],
@@ -306,7 +319,7 @@ class MediaFolderTest extends TestCase
     {
         Storage::fake('public');
         $owner = User::factory()->create();
-        $folder = $owner->folders()->create(['name' => 'חופשה']);
+        $folder = Folder::create(['user_id' => $owner->id, 'name' => 'חופשה']);
         $otherUser = User::factory()->create();
 
         $this->actingAs($otherUser)->post('/media', [
@@ -320,8 +333,9 @@ class MediaFolderTest extends TestCase
     public function test_folders_backfill_command_creates_folders_for_existing_members(): void
     {
         $user = User::factory()->create();
+        $calendar = $this->createCalendarFor($user);
         $member = FamilyMember::withoutEvents(fn () => FamilyMember::create([
-            'user_id' => $user->id,
+            'calendar_id' => $calendar->id,
             'name' => 'דני',
             'birth_date' => '1998-05-14',
         ]));
@@ -332,6 +346,7 @@ class MediaFolderTest extends TestCase
 
         $this->assertDatabaseHas('folders', [
             'user_id' => $user->id,
+            'calendar_id' => $calendar->id,
             'name' => 'דני',
             'family_member_id' => $member->id,
         ]);

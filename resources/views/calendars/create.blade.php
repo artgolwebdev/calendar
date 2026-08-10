@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h1 class="text-2xl font-semibold text-[#1A1A1E]">צור לוח שנה חדש</h1>
-            <a href="{{ route('dashboard') }}" class="text-sm font-medium text-[#6B6B75] hover:text-[#1A1A1E] transition-colors">
+            <h1 class="text-2xl font-semibold text-ink-900">צור לוח שנה חדש</h1>
+            <a href="{{ route('dashboard') }}" class="text-sm font-medium text-ink-500 hover:text-ink-900 transition-colors">
                 → חזור ללוח הבקרה
             </a>
         </div>
@@ -25,7 +25,7 @@
                     <x-cover-upload />
 
                     @if ($errors->any())
-                        <div class="p-4 rounded-lg bg-[#FEF2F2] border border-[#FCA5A5] text-sm text-[#DC2626]">
+                        <div class="alert alert-error">
                             <ul class="list-disc list-inside space-y-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -38,7 +38,7 @@
                         <button type="submit" class="btn btn-primary">
                             צור לוח שנה
                         </button>
-                        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+                        <a href="{{ route('dashboard') }}" class="btn btn-outline">
                             ביטול
                         </a>
                     </div>

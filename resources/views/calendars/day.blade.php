@@ -14,21 +14,21 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <a href="{{ route('calendars.month', [$calendar, $currentDate->month, $currentDate->year]) }}" class="btn btn-secondary btn-sm">
+                <a href="{{ route('calendars.month', [$calendar, $currentDate->month, $currentDate->year]) }}" class="btn btn-outline btn-sm">
                     → חזור לחודש
                 </a>
             </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('calendars.day', [$calendar, $previousDate->format('Y-m-d')]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="יום קודם">
+                    class="btn btn-outline btn-sm" aria-label="יום קודם">
                     → יום קודם
                 </a>
                 <a href="{{ route('calendars.day', [$calendar, now()->format('Y-m-d')]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="היום">
+                    class="btn btn-outline btn-sm" aria-label="היום">
                     היום
                 </a>
                 <a href="{{ route('calendars.day', [$calendar, $nextDate->format('Y-m-d')]) }}"
-                    class="btn btn-secondary btn-sm" aria-label="יום הבא">
+                    class="btn btn-outline btn-sm" aria-label="יום הבא">
                     יום הבא ←
                 </a>
             </div>
@@ -39,8 +39,8 @@
         <div class="container">
             <div class="flex flex-wrap items-end justify-between gap-3 mb-6">
                 <div>
-                    <h1 class="text-2xl font-semibold text-[#1A1A1E]">{{ $weekdayName }}, {{ $currentDate->day }} {{ $monthName }} {{ $currentDate->year }}</h1>
-                    <p class="text-sm text-[#6B6B75] mt-1">· {{ $hebrewDate }} {{ $hebrewYear }}</p>
+                    <h1 class="text-2xl font-semibold text-ink-900">{{ $weekdayName }}, {{ $currentDate->day }} {{ $monthName }} {{ $currentDate->year }}</h1>
+                    <p class="text-sm text-ink-500 mt-1">· {{ $hebrewDate }} {{ $hebrewYear }}</p>
                 </div>
             </div>
 
@@ -70,7 +70,7 @@
                     {{-- Hour gutter --}}
                     <div class="relative shrink-0" style="width: 3.5rem;">
                         @for ($hour = 0; $hour < 24; $hour++)
-                            <div class="absolute text-xs tabular-nums text-[#6B6B75] leading-none"
+                            <div class="absolute text-xs tabular-nums text-ink-500 leading-none"
                                 style="top: {{ $hour * 64 }}px; right: 0; transform: translateY(-50%);">
                                 {{ sprintf('%02d:00', $hour) }}
                             </div>
@@ -81,7 +81,7 @@
                     <div class="relative flex-1 border-s border-[var(--color-border)]" style="height: 1536px;">
                         @for ($hour = 0; $hour < 24; $hour++)
                             <a href="{{ $createUrl }}?date={{ $currentDate->format('Y-m-d') }}&time={{ sprintf('%02d:00', $hour) }}"
-                                class="absolute w-full border-t border-[var(--color-border)] transition-colors hover:bg-[var(--color-accent-light)]"
+                                class="absolute w-full border-t border-[var(--color-border)] transition-colors hover:bg-[var(--color-accent-soft)]"
                                 style="top: {{ $hour * 64 }}px; height: 64px;"
                                 aria-label="הוסף אירוע בשעה {{ sprintf('%02d:00', $hour) }}"></a>
                         @endfor

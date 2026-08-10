@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-5">
-        <h2 class="text-xl font-semibold text-[#1A1A1E]">איפוס סיסמה</h2>
-        <p class="text-xs text-[#6B6B75] mt-1">בחר סיסמה חדשה לחשבון שלך</p>
+        <h2 class="text-xl font-semibold text-ink-900">איפוס סיסמה</h2>
+        <p class="text-xs text-ink-500 mt-1">בחר סיסמה חדשה לחשבון שלך</p>
     </div>
 
     <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
