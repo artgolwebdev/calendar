@@ -1,8 +1,8 @@
-@props(['existing' => null])
+@props(['existing' => null, 'name' => 'cover_image_path'])
 
 <div x-data="coverCrop({ existingUrl: @js($existing) })" class="space-y-3">
     <div>
-        <label for="cover_image_path" class="label">תמונת כריכה <span class="text-xs text-ink-500 font-normal">(אופציונלי)</span></label>
+        <label for="{{ $name }}" class="label">תמונת כריכה <span class="text-xs text-ink-500 font-normal">(אופציונלי)</span></label>
 
         {{-- Current / staged preview --}}
         <div class="mt-2 flex items-center gap-3 p-3 bg-ink-50 border border-ink-200 rounded-xl">
@@ -47,7 +47,7 @@
         </div>
 
         {{-- Dropzone --}}
-        <label for="cover_image_path" @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false"
+        <label for="{{ $name }}" @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false"
             @drop.prevent="onDrop($event)"
             :class="dragOver
                 ? 'mt-3 flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed border-ink-900 bg-volt/10 rounded-2xl p-8 cursor-pointer transition-colors'
@@ -61,7 +61,7 @@
             <span class="text-sm text-ink-600" x-text="dragOver ? 'שחררו כדי לבחור' : 'גררו תמונה לכאן או בחרו מהמכשיר'"></span>
             <span class="text-xs text-ink-400">JPG · PNG · WEBP · עד 50MB — נחתך אוטומטית ליחס 21:9</span>
             <span class="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-ink-900 text-volt font-bold text-sm pointer-events-none">בחירת קובץ</span>
-            <input type="file" name="cover_image_path" id="cover_image_path" x-ref="fileInput"
+            <input type="file" name="{{ $name }}" id="{{ $name }}" x-ref="fileInput"
                 accept="image/jpeg,image/png,image/webp" class="hidden" @change="onSelect($event)">
         </label>
 
