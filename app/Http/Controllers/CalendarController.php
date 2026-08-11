@@ -6,12 +6,12 @@ use App\Http\Requests\StoreCalendarRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Models\Calendar;
 use App\Models\CalendarEvent;
+use App\Services\CalendarCreationService;
 use App\Services\CalendarMonthDataService;
 use App\Services\DayViewLayoutService;
 use App\Services\FamilyEventGeneratorService;
 use App\Services\HebrewDateService;
 use App\Services\IsraeliHolidaysService;
-use App\Services\MonthPageStyleService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -21,26 +21,26 @@ class CalendarController extends Controller
 {
     protected HebrewDateService $hebrewDateService;
 
-    protected MonthPageStyleService $monthPageStyleService;
-
     protected FamilyEventGeneratorService $familyEventGeneratorService;
 
     protected CalendarMonthDataService $calendarMonthDataService;
 
     protected DayViewLayoutService $dayViewLayoutService;
 
+    protected CalendarCreationService $calendarCreationService;
+
     public function __construct(
         HebrewDateService $hebrewDateService,
-        MonthPageStyleService $monthPageStyleService,
         FamilyEventGeneratorService $familyEventGeneratorService,
         CalendarMonthDataService $calendarMonthDataService,
-        DayViewLayoutService $dayViewLayoutService
+        DayViewLayoutService $dayViewLayoutService,
+        CalendarCreationService $calendarCreationService
     ) {
         $this->hebrewDateService = $hebrewDateService;
-        $this->monthPageStyleService = $monthPageStyleService;
         $this->familyEventGeneratorService = $familyEventGeneratorService;
         $this->calendarMonthDataService = $calendarMonthDataService;
         $this->dayViewLayoutService = $dayViewLayoutService;
+        $this->calendarCreationService = $calendarCreationService;
     }
 
     /**
@@ -66,23 +66,11 @@ class CalendarController extends Controller
      */
     public function store(StoreCalendarRequest $request)
     {
-        $data = $request->validated();
-
-        // Handle cover image upload
-        if ($request->hasFile('cover_image_path')) {
-            $path = $request->file('cover_image_path')->store('calendar-covers', 'public');
-            $data['cover_image_path'] = $path;
-        }
-
-        $calendar = Auth::user()->calendars()->create($data);
-
-        // Create 12 month pages for the calendar
-        for ($month = 1; $month <= 12; $month++) {
-            $calendar->monthPages()->create([
-                'month_number' => $month,
-                ...$this->monthPageStyleService->defaults(),
-            ]);
-        }
+        $calendar = $this->calendarCreationService->create(
+            Auth::user(),
+            $request->safe()->except(['cover_image_path']),
+            $request->file('cover_image_path')
+        );
 
         return redirect()->route('calendars.show', $calendar)
             ->with('success', 'לוח שנה נוצר בהצלחה');

@@ -24,7 +24,7 @@ class DashboardTest extends TestCase
         $response->assertDontSee('נהל וצפה בלוחות השנה המשפחתיים שלך');
     }
 
-    public function test_create_calendar_trigger_is_in_side_menu(): void
+    public function test_create_calendar_wizard_trigger_is_in_side_menu(): void
     {
         $user = User::factory()->create();
 
@@ -33,7 +33,7 @@ class DashboardTest extends TestCase
         $response->assertOk();
         $response->assertSeeInOrder([
             'פרופיל',
-            route('calendars.create'),
+            route('calendars.wizard'),
             'לוח שנה חדש',
             'הספרייה שלי',
         ]);
@@ -48,6 +48,32 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('+ צור לוח שנה חדש');
+    }
+
+    public function test_dashboard_with_no_calendars_shows_only_the_empty_state_cta(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('עדיין אין לך לוחות שנה');
+        $response->assertSee('+ צור לוח שנה חדש');
+        $response->assertDontSee('min-h-64', false);
+    }
+
+    public function test_dashboard_with_calendars_shows_the_add_calendar_card(): void
+    {
+        Http::fake(['https://www.hebcal.com/*' => Http::response(['items' => []])]);
+
+        $user = User::factory()->create();
+        $user->calendars()->create(['name' => 'לוח משפחתי']);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee('min-h-64', false);
+        $response->assertDontSee('עדיין אין לך לוחות שנה');
     }
 
     public function test_dashboard_calendar_card_links_to_edit_instead_of_delete(): void

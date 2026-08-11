@@ -56,11 +56,23 @@
                         </div>
                         <h3 class="text-base font-semibold text-ink-900 mb-1">עדיין אין לך לוחות שנה</h3>
                         <p class="text-sm text-ink-500 mb-6">צור את לוח השנה המשפחתי הראשון שלך עכשיו</p>
-                        <a href="{{ route('calendars.create') }}" class="btn btn-primary inline-flex">
+                        <a href="{{ route('calendars.wizard') }}" class="btn btn-primary inline-flex">
                             + צור לוח שנה חדש
                         </a>
                     </div>
                 @endforelse
+
+                @if ($calendars->isNotEmpty())
+                    <a href="{{ route('calendars.wizard') }}"
+                        class="card flex flex-col items-center justify-center gap-3 min-h-64 border-2 border-dashed border-ink-300 text-ink-500 hover:border-ink-900 hover:text-ink-900 hover:bg-volt/5 transition-colors">
+                        <span class="flex items-center justify-center w-12 h-12 rounded-2xl bg-ink-100 text-ink-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                        </span>
+                        <span class="text-sm font-bold">צור לוח שנה חדש</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>

@@ -3,9 +3,13 @@
     'label' => '',
     'values' => [],
     'placeholder' => 'הקישו ועשו Enter',
+    'liveValues' => null,
 ])
 
-<div x-data="tagInput({ name: @js($name), values: @js($values) })" class="space-y-2">
+<div x-data="tagInput({
+    name: @js($name),
+    values: @if ($liveValues){{ $liveValues }}@else@js($values)@endif
+})" class="space-y-2">
     @if ($label)
         <label class="label">{{ $label }}</label>
     @endif

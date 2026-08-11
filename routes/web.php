@@ -3,6 +3,7 @@
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CalendarEventController;
 use App\Http\Controllers\CalendarThemeController;
+use App\Http\Controllers\CalendarWizardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyMemberController;
 use App\Http\Controllers\FolderController;
@@ -21,6 +22,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Calendar creation wizard (must be registered before the calendars
+    // resource so /calendars/wizard is not swallowed by the {calendar} binding)
+    Route::get('/calendars/wizard', [CalendarWizardController::class, 'create'])->name('calendars.wizard');
+    Route::post('/calendars/wizard', [CalendarWizardController::class, 'store'])->name('calendars.wizard.store');
 
     // Calendar resource routes
     Route::resource('calendars', CalendarController::class);

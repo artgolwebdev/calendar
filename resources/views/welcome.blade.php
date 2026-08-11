@@ -20,7 +20,7 @@
             <nav class="bg-white border-b border-ink-200">
                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center h-16">
-                        <a href="/" class="flex items-center gap-2 font-bold text-ink-950">
+                        <a href="/" class="flex items-center gap-2 font-bold text-ink-950 whitespace-nowrap shrink-0">
                             <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-ink-950 text-volt">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -56,7 +56,7 @@
                             ימי הולדת, ימי נישואין וחגים ישראליים — הכל במקום אחד
                         </p>
                         @guest
-                            <div class="flex justify-center gap-3 mt-6">
+                            <div class="flex flex-wrap justify-center items-center gap-3 mt-6">
                                 <a href="{{ route('register') }}" class="btn btn-primary btn-lg">
                                     צור חשבון
                                 </a>
@@ -69,17 +69,22 @@
 
                     {{-- Public holidays-only month preview --}}
                     <div class="card p-4 sm:p-6 max-w-4xl mx-auto">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between gap-3 mb-4">
                             <h2 class="section-title">
                                 {{ $monthNames[$month] }} {{ $year }}
                             </h2>
-                            <span class="text-sm font-medium text-ink-500">
+                            <span class="text-sm font-medium text-ink-500 whitespace-nowrap">
                                 · {{ $hebrewMonthName }} {{ $hebrewYear }}
                             </span>
                         </div>
 
-                        <div dir="ltr">
-                            <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-4">
+                        <div class="relative" x-data="calendarPreviewScroll()">
+                            <div dir="ltr"
+                                x-ref="scroller"
+                                @scroll.passive="onScroll()"
+                                class="overflow-x-auto overscroll-x-contain scroll-smooth md:overflow-visible">
+                                <div class="min-w-[34rem] md:min-w-0">
+                                    <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-4">
                                 @foreach (['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'] as $day)
                                     <div class="text-center text-sm font-medium text-ink-500">{{ $day }}</div>
                                 @endforeach
@@ -137,6 +142,21 @@
                                         <div class="min-h-16 sm:min-h-20 rounded-lg"></div>
                                     @endif
                                 @endfor
+                            </div>
+                                </div>
+
+                                {{-- Mobile scroll affordances (hidden on desktop) --}}
+                                <div class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent md:hidden" aria-hidden="true"></div>
+                                <div class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent md:hidden" aria-hidden="true"></div>
+
+                                <div x-cloak x-show="showIndicator" x-transition.opacity.duration.200ms
+                                    class="absolute inset-y-0 right-2 flex items-center pointer-events-none md:hidden" aria-hidden="true">
+                                    <span class="flex items-center justify-center w-8 h-8 rounded-full bg-ink-950/85 text-volt shadow-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

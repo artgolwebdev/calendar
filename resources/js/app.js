@@ -178,6 +178,7 @@ Alpine.data('coverCrop', (options = {}) => ({
             }
             this.stagedFile = file;
             this.stagedUrl = URL.createObjectURL(blob);
+            this.$dispatch('cover-staged', { file });
             this.closeModal();
         }, 'image/jpeg', 0.9);
     },
@@ -200,6 +201,7 @@ Alpine.data('coverCrop', (options = {}) => ({
         this.stagedFile = null;
         this.stagedUrl = null;
         this.clearInput();
+        this.$dispatch('cover-cleared');
     },
 
     clearInput() {
@@ -328,6 +330,10 @@ Alpine.data('tagInput', (options = {}) => ({
         this.tags = Array.from(this.values ?? [])
             .map((value) => String(value).trim())
             .filter(Boolean);
+
+        this.$watch('tags', (value) => {
+            this.$dispatch('tag-change', { tags: [...value] });
+        });
     },
 
     addDraft() {
@@ -353,6 +359,435 @@ Alpine.data('tagInput', (options = {}) => ({
         if (this.draft === '' && this.tags.length) {
             this.removeTag(this.tags.length - 1);
         }
+    },
+}));
+
+Alpine.data('calendarWizard', (options = {}) => ({
+    submitUrl: options.submitUrl ?? '',
+
+    steps: [
+        { key: 'name', label: 'שם לוח השנה' },
+        { key: 'cover', label: 'תמונת כריכה' },
+        { key: 'members', label: 'בני משפחה' },
+        { key: 'review', label: 'סיכום' },
+    ],
+
+    step: 0,
+    submitting: false,
+    progress: 0,
+    submitError: '',
+    calendarName: '',
+    nameTouched: false,
+    calendarNameError: '',
+    coverFile: null,
+    coverUrl: null,
+    members: [],
+    memberPanelOpen: false,
+    _editingIndex: null,
+    _returnStep: 2,
+    memberForm: {
+        name: '',
+        birthDate: '',
+        image: null,
+        imageUrl: null,
+        imageRemoved: false,
+        existingImageUrl: null,
+        imageError: '',
+        hobbies: [],
+        sports: [],
+        music: [],
+        food: [],
+    },
+
+    get currentStep() {
+        return this.steps[this.step].key;
+    },
+
+    get stepLabel() {
+        return this.steps[this.step].label;
+    },
+
+    get isFirstStep() {
+        return this.step === 0;
+    },
+
+    get isLastStep() {
+        return this.step === this.steps.length - 1;
+    },
+
+    get nameValid() {
+        return this.calendarName.trim().length > 0;
+    },
+
+    get canProceed() {
+        return this.currentStep !== 'name' || this.nameValid;
+    },
+
+    get canSubmit() {
+        return this.nameValid && !this.submitting;
+    },
+
+    get memberCount() {
+        return this.members.length;
+    },
+
+    get canAddMember() {
+        return this.memberCount < 20;
+    },
+
+    get memberFormValid() {
+        return this.memberForm.name.trim().length > 0 && this.memberForm.birthDate.length > 0;
+    },
+
+    isStepDone(index) {
+        return index < this.step;
+    },
+
+    next() {
+        if (this.memberPanelOpen) {
+            return;
+        }
+
+        if (!this.canProceed) {
+            this.nameTouched = true;
+            return;
+        }
+
+        this.goToStep(this.step + 1);
+    },
+
+    back() {
+        if (this.memberPanelOpen) {
+            this.cancelMemberForm();
+            return;
+        }
+
+        if (this.step > 0) {
+            this.goToStep(this.step - 1);
+        }
+    },
+
+    goToStep(target) {
+        if (target < 0 || target >= this.steps.length) {
+            return;
+        }
+
+        if (target !== 2) {
+            this.memberPanelOpen = false;
+        }
+
+        this.submitError = '';
+        this.step = target;
+    },
+
+    startMemberForm() {
+        this._editingIndex = null;
+        this._returnStep = 2;
+        this.resetMemberForm();
+        this.memberPanelOpen = true;
+    },
+
+    editMember(index) {
+        const member = this.members[index];
+        this._editingIndex = index;
+        this._returnStep = this.step;
+        this.memberForm = {
+            name: member.name,
+            birthDate: member.birthDate,
+            image: null,
+            imageUrl: null,
+            imageRemoved: false,
+            existingImageUrl: member.imageUrl,
+            imageError: '',
+            hobbies: [...member.hobbies],
+            sports: [...member.sports],
+            music: [...member.music],
+            food: [...member.food],
+        };
+        this.step = 2;
+        this.memberPanelOpen = true;
+        this.submitError = '';
+    },
+
+    cancelMemberForm() {
+        this._editingIndex = null;
+        this.clearMemberImage();
+        this.resetMemberForm();
+        this.memberPanelOpen = false;
+        this.step = this._returnStep;
+        this._returnStep = 2;
+    },
+
+    collectMemberData() {
+        return {
+            name: this.memberForm.name.trim(),
+            birthDate: this.memberForm.birthDate,
+            image: this.memberForm.image,
+            imageUrl: this.memberForm.imageUrl,
+            hobbies: [...this.memberForm.hobbies],
+            sports: [...this.memberForm.sports],
+            music: [...this.memberForm.music],
+            food: [...this.memberForm.food],
+        };
+    },
+
+    applyEditPreservation(data) {
+        if (this._editingIndex == null) {
+            return data;
+        }
+
+        const previous = this.members[this._editingIndex];
+        if (this.memberForm.image) {
+            data.image = this.memberForm.image;
+            data.imageUrl = this.memberForm.imageUrl;
+        } else if (this.memberForm.imageRemoved) {
+            data.image = null;
+            data.imageUrl = null;
+        } else {
+            data.image = previous.image;
+            data.imageUrl = previous.imageUrl;
+        }
+
+        return data;
+    },
+
+    commitMember() {
+        let data = this.applyEditPreservation(this.collectMemberData());
+
+        if (this._editingIndex != null) {
+            this.members.splice(this._editingIndex, 1, data);
+        } else {
+            this.members.push(data);
+        }
+    },
+
+    saveMember() {
+        if (!this.memberFormValid) {
+            return;
+        }
+
+        this.commitMember();
+        this.closeMemberForm();
+    },
+
+    saveMemberAndContinue() {
+        if (!this.memberFormValid) {
+            return;
+        }
+
+        this.commitMember();
+        this._editingIndex = null;
+        this._returnStep = 2;
+        this.resetMemberForm();
+    },
+
+    closeMemberForm() {
+        this._editingIndex = null;
+        this.clearMemberImage();
+        this.resetMemberForm();
+        this.memberPanelOpen = false;
+        this.step = this._returnStep;
+        this._returnStep = 2;
+    },
+
+    removeMember(index) {
+        const member = this.members[index];
+        if (member.imageUrl) {
+            URL.revokeObjectURL(member.imageUrl);
+        }
+        this.members.splice(index, 1);
+    },
+
+    resetMemberForm() {
+        this.clearMemberImage();
+        this.memberForm = {
+            name: '',
+            birthDate: '',
+            image: null,
+            imageUrl: null,
+            imageRemoved: false,
+            existingImageUrl: null,
+            imageError: '',
+            hobbies: [],
+            sports: [],
+            music: [],
+            food: [],
+        };
+    },
+
+    clearMemberImage() {
+        if (this.memberForm.imageUrl) {
+            URL.revokeObjectURL(this.memberForm.imageUrl);
+        }
+        this.memberForm.image = null;
+        this.memberForm.imageUrl = null;
+        if (this.$refs.memberImageInput) {
+            this.$refs.memberImageInput.value = '';
+        }
+    },
+
+    onMemberImage(event) {
+        const file = event.target.files[0];
+        this.memberForm.imageError = '';
+
+        if (!file) {
+            return;
+        }
+        if (!file.type.startsWith('image/')) {
+            this.memberForm.imageError = 'הקובץ שנבחר אינו תמונה';
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            this.memberForm.imageError = 'הקובץ גדול מדי — גודל מקסימלי 10MB';
+            return;
+        }
+
+        if (this.memberForm.imageUrl) {
+            URL.revokeObjectURL(this.memberForm.imageUrl);
+        }
+        this.memberForm.image = file;
+        this.memberForm.imageUrl = URL.createObjectURL(file);
+        this.memberForm.imageRemoved = false;
+    },
+
+    onCoverStaged(event) {
+        if (this.coverUrl) {
+            URL.revokeObjectURL(this.coverUrl);
+        }
+        this.coverFile = event.detail.file;
+        this.coverUrl = URL.createObjectURL(event.detail.file);
+    },
+
+    onCoverCleared() {
+        if (this.coverUrl) {
+            URL.revokeObjectURL(this.coverUrl);
+        }
+        this.coverFile = null;
+        this.coverUrl = null;
+    },
+
+    onMemberTags(field, event) {
+        this.memberForm[field] = event.detail.tags;
+    },
+
+    submit() {
+        if (!this.canSubmit) {
+            return;
+        }
+
+        const csrf = document.querySelector('meta[name="csrf-token"]');
+        const formData = new FormData();
+        formData.append('name', this.calendarName.trim());
+        if (this.coverFile) {
+            formData.append('cover_image_path', this.coverFile);
+        }
+        this.members.forEach((member, index) => {
+            formData.append(`members[${index}][name]`, member.name);
+            formData.append(`members[${index}][birth_date]`, member.birthDate);
+            member.hobbies.forEach((tag) => formData.append(`members[${index}][hobbies][]`, tag));
+            member.sports.forEach((tag) => formData.append(`members[${index}][favorite_sports][]`, tag));
+            member.music.forEach((tag) => formData.append(`members[${index}][favorite_music][]`, tag));
+            member.food.forEach((tag) => formData.append(`members[${index}][favorite_food][]`, tag));
+            if (member.image) {
+                formData.append(`members[${index}][image]`, member.image);
+            }
+        });
+
+        this.submitting = true;
+        this.progress = 0;
+        this.submitError = '';
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', this.submitUrl, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrf ? csrf.getAttribute('content') : '');
+        xhr.setRequestHeader('Accept', 'application/json');
+
+        xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+                this.progress = Math.round((event.loaded / event.total) * 100);
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            let data = {};
+            try {
+                data = JSON.parse(xhr.responseText);
+            } catch {
+                data = {};
+            }
+
+            if (xhr.status >= 200 && xhr.status < 300 && data.redirect) {
+                window.location.href = data.redirect;
+                return;
+            }
+
+            this.submitting = false;
+            if (xhr.status === 422 && data.errors) {
+                this.routeSubmitErrors(data.errors);
+            } else {
+                this.submitError = data.message || 'אירעה שגיאה בשליחת הטופס';
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            this.submitting = false;
+            this.submitError = 'אירעה שגיאה בשליחת הטופס. נא לנסות שוב.';
+        });
+
+        xhr.send(formData);
+    },
+
+    routeSubmitErrors(errors) {
+        const keys = Object.keys(errors);
+
+        if (keys.includes('name')) {
+            this.step = 0;
+            this.nameTouched = true;
+            this.calendarNameError = errors.name.join(' ');
+            this.submitError = '';
+            return;
+        }
+
+        if (keys.some((key) => key.startsWith('members'))) {
+            this.step = 2;
+            this.memberPanelOpen = false;
+            this.submitError = 'חלק מפרטי בני המשפחה חסרים או שגויים. נא לבדוק ולשמור שוב.';
+            return;
+        }
+
+        this.submitError = Object.values(errors).flat().join('\n');
+    },
+}));
+
+Alpine.data('calendarPreviewScroll', () => ({
+    showIndicator: false,
+
+    init() {
+        this.update = this.update.bind(this);
+        this.$nextTick(() => this.update());
+        window.addEventListener('resize', this.update);
+    },
+
+    destroy() {
+        window.removeEventListener('resize', this.update);
+    },
+
+    onScroll() {
+        this.update();
+    },
+
+    update() {
+        const el = this.$refs.scroller;
+
+        if (!el) {
+            return;
+        }
+
+        const canScroll = el.scrollWidth > el.clientWidth;
+        const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+
+        this.showIndicator = canScroll && !atEnd;
     },
 }));
 

@@ -1,9 +1,9 @@
 @php
-    $profileActive = request()->routeIs('profile.*', 'calendars.create');
+    $profileActive = request()->routeIs('profile.*', 'calendars.wizard');
 
     $profileSubLinks = [
         ['label' => 'הגדרות פרופיל', 'route' => 'profile.edit', 'pattern' => 'profile.*', 'icon' => 'user'],
-        ['label' => 'לוח שנה חדש', 'route' => 'calendars.create', 'pattern' => 'calendars.create', 'icon' => 'calendar'],
+        ['label' => 'לוח שנה חדש', 'route' => 'calendars.wizard', 'pattern' => 'calendars.wizard', 'icon' => 'calendar'],
     ];
 
     $eventsCalendar = Auth::user()->mainCalendar();

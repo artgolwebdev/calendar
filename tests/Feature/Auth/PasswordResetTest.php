@@ -72,7 +72,7 @@ class PasswordResetTest extends TestCase
             $this->assertStringContainsString('direction:rtl;text-align:right;', $html);
             $this->assertStringContainsString('איפוס סיסמה', $html);
             $this->assertStringContainsString(config('app.name'), $html);
-            $this->assertStringContainsString($user->name, $html);
+            $this->assertStringContainsString(e($user->name), $html);
             $this->assertStringContainsString($user->email, $html);
             $this->assertStringContainsString('unicode-bidi:isolate', $html);
             $this->assertStringContainsString(

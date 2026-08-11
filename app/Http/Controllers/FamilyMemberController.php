@@ -6,12 +6,14 @@ use App\Http\Requests\StoreFamilyMemberRequest;
 use App\Http\Requests\UpdateFamilyMemberRequest;
 use App\Models\Calendar;
 use App\Models\FamilyMember;
+use App\Services\FamilyMemberMediaService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
 
 class FamilyMemberController extends Controller
 {
+    public function __construct(protected FamilyMemberMediaService $familyMemberMediaService) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -51,7 +53,7 @@ class FamilyMemberController extends Controller
 
         $member = $calendar->familyMembers()->create($request->safe()->except(['images']));
 
-        $this->storeImages($member, $request->file('images', []));
+        $this->familyMemberMediaService->storeImages($member, $request->file('images', []));
 
         return redirect()->route('calendars.edit', $calendar)
             ->with('success', 'חבר המשפחה נוסף בהצלחה');
@@ -88,7 +90,7 @@ class FamilyMemberController extends Controller
 
         $familyMember->update($request->safe()->except(['images']));
 
-        $this->storeImages($familyMember, $request->file('images', []));
+        $this->familyMemberMediaService->storeImages($familyMember, $request->file('images', []));
 
         return redirect()->route('calendars.edit', $calendar)
             ->with('success', 'השינויים נשמרו בהצלחה');
@@ -115,22 +117,5 @@ class FamilyMemberController extends Controller
         $media = $folder?->media()->orderByDesc('id')->get() ?? collect();
 
         return view('family-members.form', compact('calendar', 'familyMember', 'folder', 'media'));
-    }
-
-    /**
-     * Persist uploaded images into the member's linked media folder.
-     *
-     * @param  array<int, UploadedFile>  $files
-     */
-    private function storeImages(FamilyMember $member, array $files): void
-    {
-        $user = $member->calendar->user;
-        $folderId = $member->folder()->first()?->id;
-
-        foreach ($files as $file) {
-            $media = $user->addMedia($file)->toMediaCollection('user_media');
-            $media->folder_id = $folderId;
-            $media->save();
-        }
     }
 }
