@@ -26,11 +26,13 @@ class MonthPageController extends Controller
 
             $data['custom_image_path'] = $request->file('custom_image_path')->store('month-pages', 'public');
             $data['background_media_id'] = null;
+            $this->clearAutoBackground($data);
         } elseif ($request->filled('background_media_id')) {
             $media = Media::findOrFail($request->input('background_media_id'));
             $this->authorize('view', $media);
 
             $data['background_media_id'] = $media->id;
+            $this->clearAutoBackground($data);
         } elseif ($request->has('background_media_id')) {
             $data['background_media_id'] = null;
         }
@@ -54,5 +56,14 @@ class MonthPageController extends Controller
 
         return redirect()->route('calendars.month', [$calendar, $monthPage->month_number, now()->year])
             ->with('success', 'התמונה נמחקה בהצלחה');
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function clearAutoBackground(array &$data): void
+    {
+        $data['auto_background_media_id'] = null;
+        $data['auto_background_family_member_id'] = null;
     }
 }

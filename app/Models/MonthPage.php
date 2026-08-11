@@ -14,6 +14,8 @@ class MonthPage extends Model
         'background_image_path',
         'background_media_id',
         'custom_image_path',
+        'auto_background_media_id',
+        'auto_background_family_member_id',
         'overlay_opacity',
         'day_box_bg_color',
         'day_box_font_color',
@@ -30,5 +32,15 @@ class MonthPage extends Model
     public function backgroundMedia(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'background_media_id');
+    }
+
+    public function autoBackgroundMedia(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'auto_background_media_id');
+    }
+
+    public function autoBackgroundMember(): BelongsTo
+    {
+        return $this->belongsTo(FamilyMember::class, 'auto_background_family_member_id');
     }
 }

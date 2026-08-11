@@ -390,6 +390,7 @@ Alpine.data('calendarWizard', (options = {}) => ({
     memberPanelOpen: false,
     _editingIndex: null,
     _returnStep: 2,
+    memberImageDragOver: false,
     memberForm: {
         name: '',
         birthDate: '',
@@ -570,6 +571,7 @@ Alpine.data('calendarWizard', (options = {}) => ({
         const member = this.members[index];
         this._editingIndex = index;
         this._returnStep = this.step;
+        this.memberImageDragOver = false;
         this.memberForm = {
             name: member.name,
             birthDate: member.birthDate,
@@ -693,6 +695,7 @@ Alpine.data('calendarWizard', (options = {}) => ({
 
     resetMemberForm() {
         this.clearMemberImage();
+        this.memberImageDragOver = false;
         this.memberForm = {
             name: '',
             birthDate: '',
@@ -715,6 +718,8 @@ Alpine.data('calendarWizard', (options = {}) => ({
         }
         this.memberForm.image = null;
         this.memberForm.imageUrl = null;
+        this.memberForm.existingImageUrl = null;
+        this.memberForm.imageRemoved = true;
         if (this.$refs.memberImageInput) {
             this.$refs.memberImageInput.value = '';
         }
@@ -1017,7 +1022,20 @@ Alpine.data('calendarWizard', (options = {}) => ({
     },
 
     onMemberImage(event) {
-        const file = event.target.files[0];
+        this.handleMemberImageFile(event.target.files[0]);
+    },
+
+    onMemberImageDrop(event) {
+        event.preventDefault();
+        this.memberImageDragOver = false;
+        const file = event.dataTransfer.files[0];
+
+        if (file) {
+            this.handleMemberImageFile(file);
+        }
+    },
+
+    handleMemberImageFile(file) {
         this.memberForm.imageError = '';
 
         if (!file) {
@@ -1038,6 +1056,7 @@ Alpine.data('calendarWizard', (options = {}) => ({
         this.memberForm.image = file;
         this.memberForm.imageUrl = URL.createObjectURL(file);
         this.memberForm.imageRemoved = false;
+        this.memberForm.existingImageUrl = null;
     },
 
     onCoverStaged(event) {

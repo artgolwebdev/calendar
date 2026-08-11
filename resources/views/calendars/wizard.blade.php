@@ -165,15 +165,15 @@
 
                             <div class="max-w-md mx-auto space-y-5">
                                 <div class="flex flex-col items-center">
-                                    <div class="relative mb-3">
+                                    <div class="relative mb-4">
                                         <template x-if="memberForm.imageUrl">
-                                            <img :src="memberForm.imageUrl" alt="" class="w-24 h-24 rounded-full object-cover border border-ink-300 shadow-sm">
+                                            <img :src="memberForm.imageUrl" alt="תמונת פרופיל" class="w-24 h-24 rounded-full object-cover border border-ink-300 shadow-sm">
                                         </template>
                                         <template x-if="!memberForm.imageUrl && memberForm.existingImageUrl">
-                                            <img :src="memberForm.existingImageUrl" alt="" class="w-24 h-24 rounded-full object-cover border border-ink-300 shadow-sm">
+                                            <img :src="memberForm.existingImageUrl" alt="תמונת פרופיל" class="w-24 h-24 rounded-full object-cover border border-ink-300 shadow-sm">
                                         </template>
                                         <template x-if="!memberForm.imageUrl && !memberForm.existingImageUrl">
-                                            <div class="w-24 h-24 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center mb-3">
+                                            <div class="w-24 h-24 rounded-full bg-ink-100 text-ink-400 flex items-center justify-center">
                                                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                 </svg>
@@ -182,21 +182,36 @@
                                         <button type="button" @click="clearMemberImage()"
                                             x-show="memberForm.imageUrl || memberForm.existingImageUrl"
                                             x-cloak
-                                            class="btn-icon-ghost btn-icon-sm absolute -top-1 -right-1 bg-ink-950/70 text-white hover:bg-danger"
-                                            aria-label="הסר תמונה">
+                                            title="הסרת התמונה" aria-label="הסרת התמונה"
+                                            class="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-ink-950/70 text-white hover:bg-danger transition-colors">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round">
                                                 <path d="M6 6l12 12M18 6L6 18" />
                                             </svg>
                                         </button>
                                     </div>
 
-                                    <label class="text-xs font-semibold text-ink-600 hover:text-ink-950 cursor-pointer transition-colors">
-                                        <span x-text="_editingIndex != null ? 'החלפת תמונת פרופיל' : 'בחירת תמונת פרופיל'"></span>
-                                        <span class="text-ink-400 font-normal">(אופציונלי)</span>
+                                    <label @dragover.prevent="memberImageDragOver = true"
+                                        @dragleave.prevent="memberImageDragOver = false"
+                                        @drop.prevent="onMemberImageDrop($event)"
+                                        :class="memberImageDragOver
+                                            ? 'flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-ink-900 bg-volt/10 rounded-2xl p-5 cursor-pointer transition-colors'
+                                            : 'flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-ink-300 bg-ink-50/50 hover:border-ink-900 hover:bg-volt/5 rounded-2xl p-5 cursor-pointer transition-colors'">
+                                        <span :class="memberImageDragOver
+                                            ? 'flex items-center justify-center w-10 h-10 rounded-xl bg-ink-900 text-volt'
+                                            : 'flex items-center justify-center w-10 h-10 rounded-xl bg-ink-100 text-ink-600'">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </span>
+                                        <span class="text-sm font-semibold text-ink-700"
+                                            x-text="_editingIndex != null ? 'החלפת תמונת פרופיל' : 'בחירת תמונת פרופיל'"></span>
+                                        <span class="text-xs text-ink-400">JPEG · PNG · WebP, עד 10MB</span>
+                                        <span class="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-xl bg-ink-900 text-volt font-bold text-sm pointer-events-none"
+                                            x-text="memberForm.imageUrl || memberForm.existingImageUrl ? 'החלפת התמונה' : 'בחירת קובץ'"></span>
                                         <input type="file" x-ref="memberImageInput" accept="image/jpeg,image/png,image/webp" class="hidden"
                                             @change="onMemberImage($event)">
                                     </label>
-                                    <p x-show="memberForm.imageError" x-cloak class="mt-1 text-xs font-medium text-danger" x-text="memberForm.imageError"></p>
+                                    <p x-show="memberForm.imageError" x-cloak class="mt-2 text-xs font-medium text-danger" x-text="memberForm.imageError"></p>
                                 </div>
 
                                 <div>

@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateMediaRequest;
 use App\Models\Folder;
 use App\Models\Media;
 use App\Models\MonthPage;
+use App\Services\MemberBirthMonthBackgroundService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -123,6 +124,8 @@ class MediaController extends Controller
     public function destroy(Media $media): RedirectResponse
     {
         $this->authorize('delete', $media);
+
+        app(MemberBirthMonthBackgroundService::class)->clearForPhoto($media);
 
         MonthPage::where('background_media_id', $media->id)
             ->update(['background_media_id' => null]);

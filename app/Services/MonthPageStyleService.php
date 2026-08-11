@@ -69,19 +69,26 @@ class MonthPageStyleService
     public function gridBackground(MonthPage $monthPage): string
     {
         if ($monthPage->background_media_id && $media = $monthPage->backgroundMedia) {
-            $url = $media->getUrl();
-
-            return "background-image: url('{$url}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
+            return $this->backgroundStyle($media->getUrl());
         }
 
-        $path = $monthPage->custom_image_path ?? $monthPage->background_image_path;
+        $path = $monthPage->custom_image_path;
+
+        if (! $path && $monthPage->auto_background_media_id && $media = $monthPage->autoBackgroundMedia) {
+            return $this->backgroundStyle($media->getUrl());
+        }
+
+        $path ??= $monthPage->background_image_path;
 
         if (! $path) {
             return '';
         }
 
-        $url = asset('storage/'.$path);
+        return $this->backgroundStyle(asset('storage/'.$path));
+    }
 
+    private function backgroundStyle(string $url): string
+    {
         return "background-image: url('{$url}'); background-size: cover; background-position: center; background-repeat: no-repeat;";
     }
 

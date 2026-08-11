@@ -83,6 +83,12 @@
                         class="text-xs font-medium text-danger hover:text-danger-hover transition-colors">
                         הסר תמונה
                     </button>
+                @elseif ($monthPage->auto_background_media_id && $monthPage->autoBackgroundMedia)
+                    <img src="{{ $monthPage->autoBackgroundMedia->getUrl('thumb') }}" alt="תמונת רקע אוטומטית"
+                        class="h-12 w-16 object-cover rounded border border-ink-200">
+                    <span class="text-xs text-ink-500">
+                        הוגדר אוטומטית מתמונת {{ $monthPage->autoBackgroundMember?->name }} (חודש יומולדת)
+                    </span>
                 @else
                     <span class="text-xs text-ink-500">אין תמונת רקע</span>
                     <span class="text-xs text-ink-500">עדיין לא נבחרה</span>

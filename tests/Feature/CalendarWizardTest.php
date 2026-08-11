@@ -28,6 +28,26 @@ class CalendarWizardTest extends TestCase
         $response->assertSee('ערכת צבעים');
     }
 
+    public function test_wizard_member_form_includes_optional_photo_upload(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('calendars.wizard'));
+
+        $response->assertOk();
+
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('x-ref="memberImageInput"', $html);
+        $this->assertStringContainsString('בחירת תמונת פרופיל', $html);
+        $this->assertStringContainsString('onMemberImage($event)', $html);
+        $this->assertStringContainsString('onMemberImageDrop($event)', $html);
+        $this->assertStringContainsString('memberImageDragOver', $html);
+        $this->assertStringContainsString('clearMemberImage()', $html);
+        $this->assertStringContainsString('בחירת קובץ', $html);
+        $this->assertStringContainsString('accept="image/jpeg,image/png,image/webp"', $html);
+    }
+
     public function test_wizard_creates_a_calendar_without_members(): void
     {
         $user = User::factory()->create();

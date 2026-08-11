@@ -83,7 +83,10 @@ class CalendarController extends Controller
     {
         $this->authorize('view', $calendar);
 
-        $monthPages = $calendar->monthPages()->orderBy('month_number')->get();
+        $monthPages = $calendar->monthPages()
+            ->with(['backgroundMedia', 'autoBackgroundMedia'])
+            ->orderBy('month_number')
+            ->get();
 
         $year = now()->year;
 
@@ -120,7 +123,11 @@ class CalendarController extends Controller
 
             if ($monthPage->background_media_id && $monthPage->backgroundMedia) {
                 $imageUrl = $monthPage->backgroundMedia->getUrl();
-            } elseif ($imagePath = $monthPage->custom_image_path ?? $monthPage->background_image_path) {
+            } elseif ($imagePath = $monthPage->custom_image_path) {
+                $imageUrl = asset('storage/'.$imagePath);
+            } elseif ($monthPage->auto_background_media_id && $monthPage->autoBackgroundMedia) {
+                $imageUrl = $monthPage->autoBackgroundMedia->getUrl();
+            } elseif ($imagePath = $monthPage->background_image_path) {
                 $imageUrl = asset('storage/'.$imagePath);
             }
 
@@ -219,7 +226,10 @@ class CalendarController extends Controller
 
         $monthNumber = (int) $monthNumber;
         $year = $year ?? now()->year;
-        $monthPage = $calendar->monthPages()->where('month_number', $monthNumber)->firstOrFail();
+        $monthPage = $calendar->monthPages()
+            ->with(['backgroundMedia', 'autoBackgroundMedia', 'autoBackgroundMember'])
+            ->where('month_number', $monthNumber)
+            ->firstOrFail();
 
         // Get events for this month, resolving auto-generated recurring family
         // events against the displayed year
